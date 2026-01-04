@@ -1,7 +1,6 @@
 import type {
   DecimalString,
   MarketId,
-  RawPayload,
   Timestamp,
   TradeId,
   UUID,

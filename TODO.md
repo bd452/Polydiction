@@ -14,19 +14,19 @@
   - [X] Decide whether false positives are acceptable early on { SUMMARY.md }
   - [X] Define what "interesting" means in measurable terms { SUMMARY.md }
 
-### Repository & Environment Setup
-- [ ] Initialize monorepo structure { package.json, pnpm-workspace.yaml, turbo.json }
+### Repository & Environment Setup ✓
+- [X] Initialize monorepo structure { package.json, pnpm-workspace.yaml, turbo.json }
   - [X] Configure TypeScript + Node target { tsconfig.json }
   - [X] Set up linting / formatting { eslint.config.mjs, .prettierrc }
-  - [ ] Set up pnpm workspaces { pnpm-workspace.yaml }
-  - [ ] Set up Turborepo { turbo.json }
-  - [ ] Create shared packages structure { packages/db, packages/scoring, packages/types }
-- [ ] Initialize Next.js app (API-first) { apps/web }
-  - [ ] Enable App Router { apps/web/src/app }
-  - [ ] Disable unnecessary frontend scaffolding
-- [ ] Configure environment variable handling
-  - [ ] Add `.env.example` { .env.example }
-  - [ ] Define API base URLs and keys (Polymarket, DB)
+  - [X] Set up pnpm workspaces { pnpm-workspace.yaml }
+  - [X] Set up Turborepo { turbo.json }
+  - [X] Create shared packages structure { packages/db, packages/scoring, packages/types }
+- [X] Initialize Next.js app (API-first) { apps/web }
+  - [X] Enable App Router { apps/web/src/app }
+  - [X] Disable unnecessary frontend scaffolding
+- [X] Configure environment variable handling
+  - [X] Add `.env.example` { .env.example }
+  - [X] Define API base URLs and keys (Polymarket, DB) { apps/web/src/env.ts }
 
 ### Data Model & Storage
 - [ ] Choose database (e.g., Postgres-compatible) < SUMMARY.md >

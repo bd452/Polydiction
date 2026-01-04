@@ -1,0 +1,13 @@
+{
+  "name": "@polydiction/executor",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Trade execution service (v3)",
+  "scripts": {
+    "dev": "echo 'Executor not implemented until v3'",
+    "build": "echo 'Executor not implemented until v3'",
+    "typecheck": "echo 'Executor not implemented until v3'",
+    "lint": "echo 'Executor not implemented until v3'"
+  }
+}

@@ -1,11 +1,11 @@
 /**
  * Scoring configuration
- * See SUMMARY.md for rationale behind these values
+ * These values control anomaly detection sensitivity
  */
 
 /**
- * Feature weights for anomaly scoring
- * Weights sum to 1.0
+ * Feature weights for scoring
+ * Must sum to 1.0
  */
 export const FEATURE_WEIGHTS = {
   tradeSizeVsMedian: 0.15,
@@ -19,36 +19,44 @@ export const FEATURE_WEIGHTS = {
 } as const;
 
 /**
- * Default sensitivity value
+ * Default alert sensitivity
  * Range: 0.0 (most permissive) to 1.0 (most strict)
- * Lower = more alerts (higher recall)
- * Higher = fewer alerts (higher precision)
+ * Lower values = more alerts, higher recall, more false positives
+ * Higher values = fewer alerts, higher precision, may miss signals
  */
-export const DEFAULT_SENSITIVITY = 0.3;
+export const DEFAULT_ALERT_SENSITIVITY = 0.3;
 
 /**
  * Calculate alert threshold based on sensitivity
- * At sensitivity 0.0: threshold = 0.25 (very permissive)
- * At sensitivity 0.3: threshold = 0.40 (default)
- * At sensitivity 1.0: threshold = 0.75 (very strict)
  */
-export function calculateThreshold(sensitivity: number): number {
+export function getAlertThreshold(sensitivity: number = DEFAULT_ALERT_SENSITIVITY): number {
+  // Base threshold adjusted by sensitivity
+  // At sensitivity 0.0: threshold = 0.25 (very permissive)
+  // At sensitivity 0.3: threshold = 0.40
+  // At sensitivity 1.0: threshold = 0.75 (very strict)
   return 0.25 + sensitivity * 0.5;
 }
 
 /**
- * Must-flag conditions that bypass scoring
- * Any of these will trigger an alert regardless of score
+ * Must-flag thresholds (bypass scoring, always alert)
  */
-export const MUST_FLAG_CONDITIONS = {
-  /** Single trade exceeding this USD value */
+export const MUST_FLAG_THRESHOLDS = {
+  /** Single trade USD value */
   singleTradeUsd: 25_000,
-  /** Position accumulated within 1 hour exceeding this USD value */
+  /** Position accumulated in 1 hour */
   hourlyAccumulationUsd: 50_000,
-  /** New wallet (< 7 days) trade exceeding this USD value */
+  /** New wallet (< 7 days) trade threshold */
   newWalletTradeUsd: 10_000,
-  /** Position exceeding this percentage of market liquidity */
-  liquidityPercentage: 0.05,
-  /** Wallet age in days to be considered "new" */
+  /** New wallet age in days */
   newWalletAgeDays: 7,
+  /** Position as percentage of market liquidity */
+  positionLiquidityPercent: 5,
 } as const;
+
+/**
+ * Validate that feature weights sum to 1
+ */
+export function validateWeights(): boolean {
+  const sum = Object.values(FEATURE_WEIGHTS).reduce((a, b) => a + b, 0);
+  return Math.abs(sum - 1.0) < 0.001;
+}
