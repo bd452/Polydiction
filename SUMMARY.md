@@ -79,30 +79,73 @@ The system supports anomaly detection across all Polymarket market categories:
 
 ---
 
+## Repository Structure (Monorepo)
+
+This project uses a **pnpm workspaces + Turborepo** monorepo structure to support multiple services that share common code.
+
+```
+/
+├── apps/
+│   ├── web/              # Next.js app (v0/v1/v2 UI + API routes + cron)
+│   ├── worker/           # WebSocket ingestion worker (v2, off-Vercel)
+│   └── executor/         # Trade execution service (v3, isolated)
+├── packages/
+│   ├── db/               # Database schema, migrations, typed queries
+│   ├── scoring/          # Feature extraction & anomaly scoring
+│   └── types/            # Shared TypeScript types
+├── turbo.json            # Turborepo configuration
+├── pnpm-workspace.yaml   # Workspace definition
+└── package.json          # Root package with shared dev dependencies
+```
+
+### Package Purposes
+
+| Package | Purpose | Used By | Version |
+|---------|---------|---------|---------|
+| `@polydiction/db` | Schema, migrations, query helpers | web, worker, executor | v0+ |
+| `@polydiction/scoring` | Feature computation, scoring logic | web, worker | v0+ |
+| `@polydiction/types` | Shared types (Market, Trade, Alert) | all | v0+ |
+| `apps/web` | Next.js API + UI | — | v0+ |
+| `apps/worker` | WebSocket ingestion | — | v2+ |
+| `apps/executor` | Trade execution | — | v3+ |
+
+### Build & Dev Commands
+
+```bash
+pnpm dev          # Run all apps in dev mode
+pnpm build        # Build all packages and apps
+pnpm lint         # Lint all packages
+pnpm typecheck    # Type-check all packages
+pnpm test         # Run all tests
+```
+
+---
+
 ## High-Level Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                         Vercel Platform                         │
 ├─────────────────────────────────────────────────────────────────┤
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────────┐  │
-│  │ Cron Jobs   │  │ API Routes  │  │ Frontend (v1+)          │  │
-│  │ - markets   │  │ - /alerts   │  │ - alerts feed           │  │
-│  │ - trades    │  │ - /markets  │  │ - market detail         │  │
-│  │ - scoring   │  │ - /wallets  │  │ - wallet detail         │  │
-│  └──────┬──────┘  └──────┬──────┘  └─────────────────────────┘  │
-│         │                │                                       │
-│         ▼                ▼                                       │
 │  ┌─────────────────────────────────────────────────────────────┐│
-│  │                    Service Layer                            ││
-│  │  - MarketService    - TradeService    - ScoringService      ││
-│  │  - AlertService     - FeatureService                        ││
+│  │                      apps/web                               ││
+│  ├─────────────┬─────────────┬─────────────────────────────────┤│
+│  │ Cron Jobs   │ API Routes  │ Frontend (v1+)                  ││
+│  │ - markets   │ - /alerts   │ - alerts feed                   ││
+│  │ - trades    │ - /markets  │ - market detail                 ││
+│  │ - scoring   │ - /wallets  │ - wallet detail                 ││
+│  └──────┬──────┴──────┬──────┴─────────────────────────────────┘│
+│         │             │                                         │
+│         ▼             ▼                                         │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │              @polydiction/scoring                           ││
+│  │  - FeatureExtractor   - AnomalyScorer   - AlertGenerator    ││
 │  └──────────────────────────┬──────────────────────────────────┘│
 │                             │                                    │
 │                             ▼                                    │
 │  ┌─────────────────────────────────────────────────────────────┐│
-│  │                    Data Access Layer                        ││
-│  │  - Typed query helpers   - JSONB support                    ││
+│  │              @polydiction/db                                ││
+│  │  - Typed query helpers   - Migrations   - JSONB support     ││
 │  └──────────────────────────┬──────────────────────────────────┘│
 └─────────────────────────────┼───────────────────────────────────┘
                               │
@@ -118,6 +161,21 @@ The system supports anomaly detection across all Polymarket market categories:
               │  - CLOB API (trades/orders)   │
               │  - Gamma API (markets)        │
               └───────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│                    External Workers (v2+)                       │
+├─────────────────────────────────────────────────────────────────┤
+│  ┌─────────────────────────┐  ┌───────────────────────────────┐ │
+│  │      apps/worker        │  │      apps/executor (v3)       │ │
+│  │  - WebSocket client     │  │  - Order construction         │ │
+│  │  - Event normalization  │  │  - Risk management            │ │
+│  │  - Queue bridge         │  │  - Position tracking          │ │
+│  └───────────┬─────────────┘  └───────────────┬───────────────┘ │
+│              │                                │                  │
+│              ▼                                ▼                  │
+│        @polydiction/scoring            @polydiction/db          │
+│        @polydiction/db                 @polydiction/types       │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -317,6 +375,7 @@ Major architectural decisions should be recorded in `docs/decisions/`.
 
 | Date | Decision | Rationale |
 |------|----------|-----------|
+| 2026-01-04 | Monorepo with pnpm + Turborepo | v2 requires external worker, v3 requires isolated executor; shared db/scoring/types packages avoid duplication |
 | TBD | Use Vercel cron for v0 polling | Simplicity, no infrastructure overhead |
 | TBD | PostgreSQL with JSONB | Flexibility for raw payloads, strong typing |
 | TBD | Defer WebSocket to v2 | Vercel serverless incompatible with long-lived connections |
