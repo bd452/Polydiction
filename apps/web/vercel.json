@@ -4,6 +4,18 @@
     {
       "path": "/api/cron/markets",
       "schedule": "*/15 * * * *"
+    },
+    {
+      "path": "/api/cron/trades",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/cron/orderbook",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/cron/positions",
+      "schedule": "*/15 * * * *"
     }
   ]
 }

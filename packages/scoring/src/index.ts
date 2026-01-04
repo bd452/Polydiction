@@ -4,3 +4,4 @@
 export * from "./config";
 export * from "./scorer";
 export * from "./types";
+export * from "./features";

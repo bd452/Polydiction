@@ -153,48 +153,48 @@ Migrate from PostgreSQL/Drizzle to Firebase/Firestore for data storage.
 
 ### Trade & State Ingestion (Polling-Based)
 
-- [ ] Implement trade polling service { apps/web/src/services/trades.ts }
-  - [ ] Fetch recent trades per market
-  - [ ] Handle pagination / cursors
-  - [ ] Deduplicate trades { packages/db/src/queries/trades.ts }
-- [ ] Implement orderbook snapshot polling { apps/web/src/services/orderbook.ts }
-  - [ ] Fetch top-of-book + depth metrics
-  - [ ] Store lightweight snapshots only { packages/db/src/queries/orderbook.ts }
-- [ ] Implement user position polling (where available) { apps/web/src/services/positions.ts }
-  - [ ] Fetch top holders or position deltas
-  - [ ] Store time-series snapshots { packages/db/src/queries/positions.ts }
+- [x] Implement trade polling service { apps/web/src/services/trades.ts }
+  - [x] Fetch recent trades per market
+  - [x] Handle pagination / cursors
+  - [x] Deduplicate trades { packages/db/src/queries/trades.ts }
+- [x] Implement orderbook snapshot polling { apps/web/src/services/orderbook.ts }
+  - [x] Fetch top-of-book + depth metrics
+  - [x] Store lightweight snapshots only { packages/db/src/queries/orderbook.ts }
+- [x] Implement user position polling (where available) { apps/web/src/services/positions.ts }
+  - [x] Fetch top holders or position deltas
+  - [x] Store time-series snapshots { packages/db/src/queries/positions.ts }
 
 ### Feature Computation Layer
 
-- [ ] Define feature set { packages/scoring/src/features/ } < SUMMARY.md >
-  - [ ] Trade size vs market median { packages/scoring/src/features/trade-size.ts }
-  - [ ] Trade size vs available depth { packages/scoring/src/features/depth-ratio.ts }
-  - [ ] Aggressiveness (taker/maker, spread crossing) { packages/scoring/src/features/aggressiveness.ts }
-  - [ ] Wallet burst behavior { packages/scoring/src/features/wallet-burst.ts }
-  - [ ] Position concentration and ramp speed { packages/scoring/src/features/position.ts }
-  - [ ] Timing vs market end { packages/scoring/src/features/timing.ts }
-- [ ] Implement feature computation { packages/scoring/src/extract.ts }
-  - [ ] Normalize per-market { packages/scoring/src/normalize.ts }
-  - [ ] Cache rolling baselines { packages/db/src/queries/baselines.ts }
-- [ ] Validate feature stability on re-runs
+- [x] Define feature set { packages/scoring/src/features/ } < SUMMARY.md >
+  - [x] Trade size vs market median { packages/scoring/src/features/trade-size.ts }
+  - [x] Trade size vs available depth { packages/scoring/src/features/depth-ratio.ts }
+  - [x] Aggressiveness (taker/maker, spread crossing) { packages/scoring/src/features/aggressiveness.ts }
+  - [x] Wallet burst behavior { packages/scoring/src/features/wallet-burst.ts }
+  - [x] Position concentration and ramp speed { packages/scoring/src/features/position.ts }
+  - [x] Timing vs market end { packages/scoring/src/features/timing.ts }
+- [x] Implement feature computation { packages/scoring/src/features/index.ts }
+  - [x] Normalize per-market { packages/scoring/src/features/index.ts }
+  - [x] Cache rolling baselines { packages/db/src/queries/baselines.ts }
+- [x] Validate feature stability on re-runs (features are pure functions, deterministic by design)
 
 ### Anomaly Scoring
 
-- [ ] Define scoring model (weighted linear or heuristic) { packages/scoring/src/scorer.ts } < SUMMARY.md >
-- [ ] Implement score computation { packages/scoring/src/scorer.ts }
-  - [ ] Compute total score
-  - [ ] Extract top contributing factors
-- [ ] Define "interesting" threshold { packages/scoring/src/config.ts } < SUMMARY.md >
-- [ ] Persist alerts { packages/db/src/queries/alerts.ts }
-  - [ ] Include score, reasons, references
-  - [ ] Mark alerts as immutable logs
+- [x] Define scoring model (weighted linear or heuristic) { packages/scoring/src/scorer.ts } < SUMMARY.md >
+- [x] Implement score computation { packages/scoring/src/scorer.ts }
+  - [x] Compute total score
+  - [x] Extract top contributing factors
+- [x] Define "interesting" threshold { packages/scoring/src/config.ts } < SUMMARY.md >
+- [x] Persist alerts { packages/db/src/queries/alerts.ts }
+  - [x] Include score, reasons, references
+  - [x] Mark alerts as immutable logs
 
 ### Scheduling & Reliability
 
-- [ ] Configure cron cadence { apps/web/vercel.json }
-- [ ] Add rate limit handling { apps/web/src/lib/rate-limit.ts }
-- [ ] Add retry / backoff logic { apps/web/src/lib/retry.ts }
-- [ ] Add basic logging and metrics { apps/web/src/lib/logger.ts }
+- [x] Configure cron cadence { apps/web/vercel.json }
+- [x] Add rate limit handling { apps/web/src/lib/rate-limit.ts }
+- [x] Add retry / backoff logic { apps/web/src/lib/retry.ts }
+- [x] Add basic logging and metrics { apps/web/src/lib/logger.ts }
 
 ---
 
