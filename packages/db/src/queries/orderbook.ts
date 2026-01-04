@@ -1,6 +1,7 @@
 import { Timestamp } from "firebase-admin/firestore";
 import { getOrderbookSnapshotsCollection } from "../collections";
 import type { OrderbookSnapshot, NewOrderbookSnapshot } from "../schema";
+import { calculateAverage } from "../utils/calculations";
 
 /**
  * Get the latest orderbook snapshot for a token
@@ -109,9 +110,9 @@ export async function getAverageSpread(tokenId: string, windowMs: number): Promi
   }
 
   const spreads = snapshots.map((s) => parseFloat(s.spread));
-  const avgSpread = spreads.reduce((sum, s) => sum + s, 0) / spreads.length;
+  const avgSpread = calculateAverage(spreads);
 
-  return avgSpread.toString();
+  return avgSpread !== null ? avgSpread.toString() : null;
 }
 
 /**

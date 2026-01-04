@@ -1,6 +1,7 @@
 import { Timestamp } from "firebase-admin/firestore";
 import { getWalletPositionsCollection } from "../collections";
 import type { WalletPosition, NewWalletPosition } from "../schema";
+import { calculateRampSpeed, calculateConcentration } from "../utils/calculations";
 
 /**
  * Get the latest position for a wallet in a specific token
@@ -168,19 +169,19 @@ export async function getPositionRampSpeed(
     return null;
   }
 
-  const positionChange = parseFloat(latest.position) - parseFloat(oldest.position);
+  const startValue = parseFloat(oldest.position);
+  const endValue = parseFloat(latest.position);
   const timeDelta = latest.timestamp.toMillis() - oldest.timestamp.toMillis();
 
-  if (timeDelta === 0) {
+  const rampSpeed = calculateRampSpeed(startValue, endValue, timeDelta);
+
+  if (rampSpeed === null) {
     return null;
   }
 
-  // Ramp speed in position units per hour
-  const rampSpeedPerHour = (positionChange / timeDelta) * 3600000;
-
   return {
-    rampSpeed: rampSpeedPerHour.toString(),
-    positionChange: positionChange.toString(),
+    rampSpeed: rampSpeed.toString(),
+    positionChange: (endValue - startValue).toString(),
   };
 }
 
@@ -203,12 +204,10 @@ export async function getPositionConcentration(
     return "0";
   }
 
+  const walletPosition = parseFloat(walletHolder.totalPosition);
   const totalMarket = topHolders.reduce((sum, h) => sum + parseFloat(h.totalPosition), 0);
 
-  if (totalMarket === 0) {
-    return null;
-  }
+  const concentration = calculateConcentration(walletPosition, totalMarket);
 
-  const concentration = parseFloat(walletHolder.totalPosition) / totalMarket;
-  return concentration.toString();
+  return concentration !== null ? concentration.toString() : null;
 }

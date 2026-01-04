@@ -1,5 +1,6 @@
 import { Timestamp } from "firebase-admin/firestore";
 import { getDb } from "../client";
+import { calculateWeightedAverage, isStale as isStaleUtil } from "../utils/calculations";
 
 /**
  * Baseline document for caching rolling statistics
@@ -130,8 +131,12 @@ export async function updateBaselineIncremental(
   const existingValue = parseFloat(existing.value);
   const totalSamples = existing.sampleCount + newSampleCount;
 
-  const weightedAvg =
-    (existingValue * existing.sampleCount + newValue * newSampleCount) / totalSamples;
+  const weightedAvg = calculateWeightedAverage(
+    existingValue,
+    existing.sampleCount,
+    newValue,
+    newSampleCount
+  );
 
   await upsertBaseline({
     type,
@@ -157,8 +162,7 @@ export async function isBaselineStale(
     return true;
   }
 
-  const age = Date.now() - baseline.updatedAt.toMillis();
-  return age > maxAgeMs;
+  return isStaleUtil(baseline.updatedAt.toMillis(), Date.now(), maxAgeMs);
 }
 
 /**

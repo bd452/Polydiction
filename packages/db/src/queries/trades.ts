@@ -1,6 +1,7 @@
 import { Timestamp } from "firebase-admin/firestore";
 import { getTradesCollection } from "../collections";
 import type { Trade, NewTrade } from "../schema";
+import { calculateMedian } from "../utils/calculations";
 
 /**
  * Get a trade by ID
@@ -184,18 +185,8 @@ export async function getMedianTradeSize(
     return null;
   }
 
-  const sizes = trades.map((t) => parseFloat(t.size)).sort((a, b) => a - b);
+  const sizes = trades.map((t) => parseFloat(t.size));
+  const median = calculateMedian(sizes);
 
-  const midIndex = Math.floor(sizes.length / 2);
-
-  let median: number;
-  if (sizes.length % 2 === 0) {
-    const lower = sizes[midIndex - 1];
-    const upper = sizes[midIndex];
-    median = lower !== undefined && upper !== undefined ? (lower + upper) / 2 : 0;
-  } else {
-    median = sizes[midIndex] ?? 0;
-  }
-
-  return median.toString();
+  return median !== null ? median.toString() : null;
 }
