@@ -276,6 +276,21 @@ The data model uses Firebase Firestore collections. Decimal values are stored as
 | marketState | map       | Market context at alert time |
 | createdAt   | Timestamp | Alert creation (immutable)   |
 
+#### `baselines` Collection
+
+Rolling statistical baselines cached for feature computation.
+
+| Field       | Type      | Description                        |
+| ----------- | --------- | ---------------------------------- |
+| id          | string    | Composite key: `{type}:{targetId}` |
+| type        | string    | Baseline type (e.g., `trade_size_median`) |
+| targetId    | string    | Target entity ID (marketId, tokenId) |
+| value       | string    | Cached baseline value (decimal)    |
+| sampleCount | number    | Sample count used for computation  |
+| windowStart | Timestamp | Start of the sample window         |
+| windowEnd   | Timestamp | End of the sample window           |
+| updatedAt   | Timestamp | Last computation time              |
+
 ### Firestore Indexes
 
 Required composite indexes for efficient querying:
