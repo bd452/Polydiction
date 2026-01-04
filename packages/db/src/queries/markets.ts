@@ -1,34 +1,26 @@
 import { Timestamp } from "firebase-admin/firestore";
 import { getMarketsCollection } from "../collections";
 import type { Market, NewMarket } from "../schema";
+import {
+  getDocumentById,
+  getDocumentsByIds,
+  processBatches,
+  countBatchResults,
+  extractDocsData,
+} from "../utils/firestore";
 
 /**
  * Get a market by ID
  */
 export async function getMarket(id: string): Promise<Market | null> {
-  const doc = await getMarketsCollection().doc(id).get();
-  const data = doc.data();
-  if (!doc.exists || !data) {
-    return null;
-  }
-  return data;
+  return getDocumentById(getMarketsCollection(), id);
 }
 
 /**
  * Get multiple markets by IDs
  */
 export async function getMarkets(ids: string[]): Promise<Market[]> {
-  if (ids.length === 0) {
-    return [];
-  }
-
-  const collection = getMarketsCollection();
-  const docs = await Promise.all(ids.map((id) => collection.doc(id).get()));
-
-  return docs
-    .filter((doc) => doc.exists)
-    .map((doc) => doc.data())
-    .filter((data): data is Market => data !== undefined);
+  return getDocumentsByIds(getMarketsCollection(), ids);
 }
 
 /**
@@ -40,7 +32,7 @@ export async function getActiveMarkets(): Promise<Market[]> {
     .orderBy("updatedAt", "desc")
     .get();
 
-  return snapshot.docs.map((doc) => doc.data());
+  return extractDocsData(snapshot);
 }
 
 /**
@@ -52,7 +44,7 @@ export async function getMarketsByCategory(category: string): Promise<Market[]> 
     .where("active", "==", true)
     .get();
 
-  return snapshot.docs.map((doc) => doc.data());
+  return extractDocsData(snapshot);
 }
 
 /**
@@ -100,19 +92,8 @@ export async function upsertMarket(market: NewMarket): Promise<boolean> {
 export async function batchUpsertMarkets(
   markets: NewMarket[]
 ): Promise<{ created: number; updated: number }> {
-  let created = 0;
-  let updated = 0;
-
-  // Process in batches of 500 (Firestore limit)
-  const batchSize = 500;
-  for (let i = 0; i < markets.length; i += batchSize) {
-    const batch = markets.slice(i, i + batchSize);
-    const results = await Promise.all(batch.map((m) => upsertMarket(m)));
-    created += results.filter((r) => r).length;
-    updated += results.filter((r) => !r).length;
-  }
-
-  return { created, updated };
+  const results = await processBatches(markets, upsertMarket);
+  return countBatchResults(results);
 }
 
 /**
@@ -141,8 +122,7 @@ export async function searchMarkets(query: string, limit = 20): Promise<Market[]
     .limit(limit * 5) // Fetch more to account for filtering
     .get();
 
-  const markets = snapshot.docs
-    .map((doc) => doc.data())
+  const markets = extractDocsData(snapshot)
     .filter(
       (m) =>
         m.question.toLowerCase().includes(lowerQuery) ||

@@ -1,17 +1,20 @@
 import { Timestamp } from "firebase-admin/firestore";
 import { getTokensCollection } from "../collections";
 import type { Token, NewToken } from "../schema";
+import {
+  getDocumentById,
+  getDocumentsByIds,
+  processBatches,
+  countBatchResults,
+  extractDocsData,
+  batchDeleteFromSnapshot,
+} from "../utils/firestore";
 
 /**
  * Get a token by ID
  */
 export async function getToken(id: string): Promise<Token | null> {
-  const doc = await getTokensCollection().doc(id).get();
-  const data = doc.data();
-  if (!doc.exists || !data) {
-    return null;
-  }
-  return data;
+  return getDocumentById(getTokensCollection(), id);
 }
 
 /**
@@ -20,24 +23,14 @@ export async function getToken(id: string): Promise<Token | null> {
 export async function getTokensByMarket(marketId: string): Promise<Token[]> {
   const snapshot = await getTokensCollection().where("marketId", "==", marketId).get();
 
-  return snapshot.docs.map((doc) => doc.data());
+  return extractDocsData(snapshot);
 }
 
 /**
  * Get multiple tokens by IDs
  */
 export async function getTokens(ids: string[]): Promise<Token[]> {
-  if (ids.length === 0) {
-    return [];
-  }
-
-  const collection = getTokensCollection();
-  const docs = await Promise.all(ids.map((id) => collection.doc(id).get()));
-
-  return docs
-    .filter((doc) => doc.exists)
-    .map((doc) => doc.data())
-    .filter((data): data is Token => data !== undefined);
+  return getDocumentsByIds(getTokensCollection(), ids);
 }
 
 /**
@@ -79,19 +72,8 @@ export async function upsertToken(token: NewToken): Promise<boolean> {
 export async function batchUpsertTokens(
   tokens: NewToken[]
 ): Promise<{ created: number; updated: number }> {
-  let created = 0;
-  let updated = 0;
-
-  // Process in batches of 500 (Firestore limit)
-  const batchSize = 500;
-  for (let i = 0; i < tokens.length; i += batchSize) {
-    const batch = tokens.slice(i, i + batchSize);
-    const results = await Promise.all(batch.map((t) => upsertToken(t)));
-    created += results.filter((r) => r).length;
-    updated += results.filter((r) => !r).length;
-  }
-
-  return { created, updated };
+  const results = await processBatches(tokens, upsertToken);
+  return countBatchResults(results);
 }
 
 /**
@@ -110,12 +92,5 @@ export async function updateTokenPrice(id: string, price: string): Promise<void>
  */
 export async function deleteTokensByMarket(marketId: string): Promise<number> {
   const snapshot = await getTokensCollection().where("marketId", "==", marketId).get();
-
-  const batch = getTokensCollection().firestore.batch();
-  snapshot.docs.forEach((doc) => {
-    batch.delete(doc.ref);
-  });
-
-  await batch.commit();
-  return snapshot.docs.length;
+  return batchDeleteFromSnapshot(snapshot);
 }

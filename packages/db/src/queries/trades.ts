@@ -2,17 +2,18 @@ import { Timestamp } from "firebase-admin/firestore";
 import { getTradesCollection } from "../collections";
 import type { Trade, NewTrade } from "../schema";
 import { calculateMedian } from "../utils/calculations";
+import {
+  getDocumentById,
+  processBatches,
+  extractDocsData,
+  getFirstDocOrNull,
+} from "../utils/firestore";
 
 /**
  * Get a trade by ID
  */
 export async function getTrade(id: string): Promise<Trade | null> {
-  const doc = await getTradesCollection().doc(id).get();
-  const data = doc.data();
-  if (!doc.exists || !data) {
-    return null;
-  }
-  return data;
+  return getDocumentById(getTradesCollection(), id);
 }
 
 /**
@@ -31,7 +32,7 @@ export async function getTradesByMarket(
   }
 
   const snapshot = await query.limit(limit).get();
-  return snapshot.docs.map((doc) => doc.data());
+  return extractDocsData(snapshot);
 }
 
 /**
@@ -49,7 +50,7 @@ export async function getTradesByToken(
     .limit(limit)
     .get();
 
-  return snapshot.docs.map((doc) => doc.data());
+  return extractDocsData(snapshot);
 }
 
 /**
@@ -107,7 +108,7 @@ export async function getRecentTrades(marketId: string, windowMs: number): Promi
     .orderBy("timestamp", "desc")
     .get();
 
-  return snapshot.docs.map((doc) => doc.data());
+  return extractDocsData(snapshot);
 }
 
 /**
@@ -138,17 +139,9 @@ export async function insertTrade(trade: NewTrade): Promise<boolean> {
  * Returns count of inserted trades (skips duplicates)
  */
 export async function batchInsertTrades(trades: NewTrade[]): Promise<number> {
-  let inserted = 0;
-
-  // Process in batches to avoid memory issues
-  const batchSize = 100;
-  for (let i = 0; i < trades.length; i += batchSize) {
-    const batch = trades.slice(i, i + batchSize);
-    const results = await Promise.all(batch.map((t) => insertTrade(t)));
-    inserted += results.filter((r) => r).length;
-  }
-
-  return inserted;
+  // Use smaller batch size for trades to avoid memory issues
+  const results = await processBatches(trades, insertTrade, 100);
+  return results.filter((r) => r).length;
 }
 
 /**
@@ -162,13 +155,8 @@ export async function getLatestTradeTimestamp(marketId: string): Promise<Timesta
     .limit(1)
     .get();
 
-  const firstDoc = snapshot.docs[0];
-  if (snapshot.empty || !firstDoc) {
-    return null;
-  }
-
-  const trade = firstDoc.data();
-  return trade.timestamp;
+  const trade = getFirstDocOrNull(snapshot);
+  return trade?.timestamp ?? null;
 }
 
 /**

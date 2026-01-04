@@ -2,6 +2,7 @@ import { Timestamp } from "firebase-admin/firestore";
 import { getWalletPositionsCollection } from "../collections";
 import type { WalletPosition, NewWalletPosition } from "../schema";
 import { calculateRampSpeed, calculateConcentration } from "../utils/calculations";
+import { processBatches, extractDocsData, getFirstDocOrNull } from "../utils/firestore";
 
 /**
  * Get the latest position for a wallet in a specific token
@@ -17,12 +18,7 @@ export async function getLatestPosition(
     .limit(1)
     .get();
 
-  const firstDoc = snapshot.docs[0];
-  if (snapshot.empty || !firstDoc) {
-    return null;
-  }
-
-  return firstDoc.data();
+  return getFirstDocOrNull(snapshot);
 }
 
 /**
@@ -69,7 +65,7 @@ export async function getPositionHistory(
   }
 
   const snapshot = await query.limit(limit).get();
-  return snapshot.docs.map((doc) => doc.data());
+  return extractDocsData(snapshot);
 }
 
 /**
@@ -138,17 +134,7 @@ export async function insertPositionSnapshot(position: NewWalletPosition): Promi
 export async function batchInsertPositionSnapshots(
   positions: NewWalletPosition[]
 ): Promise<string[]> {
-  const ids: string[] = [];
-
-  // Process in batches of 500 (Firestore limit)
-  const batchSize = 500;
-  for (let i = 0; i < positions.length; i += batchSize) {
-    const batchItems = positions.slice(i, i + batchSize);
-    const batchIds = await Promise.all(batchItems.map((p) => insertPositionSnapshot(p)));
-    ids.push(...batchIds);
-  }
-
-  return ids;
+  return processBatches(positions, insertPositionSnapshot);
 }
 
 /**

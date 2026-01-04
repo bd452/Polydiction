@@ -2,6 +2,12 @@ import { Timestamp } from "firebase-admin/firestore";
 import { getOrderbookSnapshotsCollection } from "../collections";
 import type { OrderbookSnapshot, NewOrderbookSnapshot } from "../schema";
 import { calculateAverage } from "../utils/calculations";
+import {
+  processBatches,
+  extractDocsData,
+  getFirstDocOrNull,
+  batchDeleteFromSnapshot,
+} from "../utils/firestore";
 
 /**
  * Get the latest orderbook snapshot for a token
@@ -15,12 +21,7 @@ export async function getLatestOrderbookSnapshot(
     .limit(1)
     .get();
 
-  const firstDoc = snapshot.docs[0];
-  if (snapshot.empty || !firstDoc) {
-    return null;
-  }
-
-  return firstDoc.data();
+  return getFirstDocOrNull(snapshot);
 }
 
 /**
@@ -42,7 +43,7 @@ export async function getOrderbookSnapshots(
   }
 
   const snapshot = await query.limit(limit).get();
-  return snapshot.docs.map((doc) => doc.data());
+  return extractDocsData(snapshot);
 }
 
 /**
@@ -60,7 +61,7 @@ export async function getOrderbookSnapshotsByMarket(
     .limit(limit)
     .get();
 
-  return snapshot.docs.map((doc) => doc.data());
+  return extractDocsData(snapshot);
 }
 
 /**
@@ -86,17 +87,7 @@ export async function insertOrderbookSnapshot(snapshot: NewOrderbookSnapshot): P
 export async function batchInsertOrderbookSnapshots(
   snapshots: NewOrderbookSnapshot[]
 ): Promise<string[]> {
-  const ids: string[] = [];
-
-  // Process in batches of 500 (Firestore limit)
-  const batchSize = 500;
-  for (let i = 0; i < snapshots.length; i += batchSize) {
-    const batchItems = snapshots.slice(i, i + batchSize);
-    const batchIds = await Promise.all(batchItems.map((s) => insertOrderbookSnapshot(s)));
-    ids.push(...batchIds);
-  }
-
-  return ids;
+  return processBatches(snapshots, insertOrderbookSnapshot);
 }
 
 /**
@@ -150,15 +141,5 @@ export async function cleanupOldSnapshots(retentionMs: number): Promise<number> 
     .limit(500) // Process in batches
     .get();
 
-  if (snapshot.empty) {
-    return 0;
-  }
-
-  const batch = getOrderbookSnapshotsCollection().firestore.batch();
-  snapshot.docs.forEach((doc) => {
-    batch.delete(doc.ref);
-  });
-
-  await batch.commit();
-  return snapshot.docs.length;
+  return batchDeleteFromSnapshot(snapshot);
 }

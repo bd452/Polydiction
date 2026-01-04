@@ -1,17 +1,13 @@
 import { Timestamp } from "firebase-admin/firestore";
 import { getAlertsCollection } from "../collections";
 import type { Alert, NewAlert } from "../schema";
+import { getDocumentById, extractDocsData } from "../utils/firestore";
 
 /**
  * Get an alert by ID
  */
 export async function getAlert(id: string): Promise<Alert | null> {
-  const doc = await getAlertsCollection().doc(id).get();
-  const data = doc.data();
-  if (!doc.exists || !data) {
-    return null;
-  }
-  return data;
+  return getDocumentById(getAlertsCollection(), id);
 }
 
 /**
@@ -29,7 +25,7 @@ export async function getAlertsByMarket(
   // Consider storing score as number for proper ordering
 
   const snapshot = await query.limit(limit).get();
-  let alerts = snapshot.docs.map((doc) => doc.data());
+  let alerts = extractDocsData(snapshot);
 
   if (minScore !== undefined) {
     alerts = alerts.filter((a) => parseFloat(a.score) >= minScore);
@@ -53,7 +49,7 @@ export async function getAlertsByWallet(
     .limit(limit)
     .get();
 
-  return snapshot.docs.map((doc) => doc.data());
+  return extractDocsData(snapshot);
 }
 
 /**
@@ -75,7 +71,7 @@ export async function getRecentAlerts(
   }
 
   const snapshot = await query.limit(limit).get();
-  let alerts = snapshot.docs.map((doc) => doc.data());
+  let alerts = extractDocsData(snapshot);
 
   if (minScore !== undefined) {
     alerts = alerts.filter((a) => parseFloat(a.score) >= minScore);
@@ -102,8 +98,7 @@ export async function getHighScoreAlerts(
 
   const snapshot = await query.limit(limit * 2).get();
 
-  return snapshot.docs
-    .map((doc) => doc.data())
+  return extractDocsData(snapshot)
     .filter((a) => parseFloat(a.score) >= minScore)
     .slice(0, limit);
 }
@@ -201,7 +196,7 @@ export async function getAlertStats(windowMs: number): Promise<{
     return { total: 0, averageScore: "0", maxScore: "0" };
   }
 
-  const alerts = snapshot.docs.map((doc) => doc.data());
+  const alerts = extractDocsData(snapshot);
   const scores = alerts.map((a) => parseFloat(a.score));
 
   const total = alerts.length;

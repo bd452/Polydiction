@@ -1,6 +1,7 @@
 import { Timestamp } from "firebase-admin/firestore";
 import { getDb } from "../client";
 import { calculateWeightedAverage, isStale as isStaleUtil } from "../utils/calculations";
+import { batchDeleteFromSnapshot } from "../utils/firestore";
 
 /**
  * Baseline document for caching rolling statistics
@@ -178,18 +179,7 @@ export async function deleteBaseline(type: string, targetId: string): Promise<vo
  */
 export async function deleteBaselinesForTarget(targetId: string): Promise<number> {
   const snapshot = await getBaselinesCollection().where("targetId", "==", targetId).get();
-
-  if (snapshot.empty) {
-    return 0;
-  }
-
-  const batch = getDb().batch();
-  snapshot.docs.forEach((doc) => {
-    batch.delete(doc.ref);
-  });
-
-  await batch.commit();
-  return snapshot.docs.length;
+  return batchDeleteFromSnapshot(snapshot);
 }
 
 /**
@@ -203,17 +193,7 @@ export async function cleanupStaleBaselines(maxAgeMs: number): Promise<number> {
     .limit(500) // Process in batches
     .get();
 
-  if (snapshot.empty) {
-    return 0;
-  }
-
-  const batch = getDb().batch();
-  snapshot.docs.forEach((doc) => {
-    batch.delete(doc.ref);
-  });
-
-  await batch.commit();
-  return snapshot.docs.length;
+  return batchDeleteFromSnapshot(snapshot);
 }
 
 // Common baseline types
