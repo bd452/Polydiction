@@ -152,14 +152,14 @@ pnpm test         # Run all tests
 │                             ▼                                    │
 │  ┌─────────────────────────────────────────────────────────────┐│
 │  │              @polydiction/db                                ││
-│  │  - Typed query helpers   - Migrations   - JSONB support     ││
+│  │  - Typed query helpers   - Collection refs  - Validation    ││
 │  └──────────────────────────┬──────────────────────────────────┘│
 └─────────────────────────────┼───────────────────────────────────┘
                               │
                               ▼
                     ┌─────────────────┐
-                    │   PostgreSQL    │
-                    │   (Neon, etc.)  │
+                    │    Firebase     │
+                    │   Firestore     │
                     └─────────────────┘
                               ▲
                               │
@@ -189,90 +189,142 @@ pnpm test         # Run all tests
 
 ## Data Model (v0)
 
-### Core Tables
+### Firestore Collections
 
-#### `markets`
+The data model uses Firebase Firestore collections. Decimal values are stored as strings to preserve precision. Timestamps use Firestore's native `Timestamp` type.
 
-| Column      | Type      | Description             |
+#### `markets` Collection
+
+| Field       | Type      | Description             |
 | ----------- | --------- | ----------------------- |
-| id          | TEXT (PK) | Polymarket condition_id |
-| slug        | TEXT      | URL-friendly identifier |
-| question    | TEXT      | Market question         |
-| description | TEXT      | Full description        |
-| category    | TEXT      | Market category         |
-| end_date    | TIMESTAMP | Market resolution date  |
-| active      | BOOLEAN   | Whether market is open  |
-| raw         | JSONB     | Full API response       |
-| created_at  | TIMESTAMP | Record creation         |
-| updated_at  | TIMESTAMP | Last update             |
+| id          | string    | Document ID (condition_id) |
+| slug        | string    | URL-friendly identifier |
+| question    | string    | Market question         |
+| description | string    | Full description        |
+| category    | string    | Market category         |
+| endDate     | Timestamp | Market resolution date  |
+| active      | boolean   | Whether market is open  |
+| raw         | map       | Full API response       |
+| createdAt   | Timestamp | Record creation         |
+| updatedAt   | Timestamp | Last update             |
 
-#### `tokens`
+#### `tokens` Collection
 
-| Column     | Type      | Description               |
-| ---------- | --------- | ------------------------- |
-| id         | TEXT (PK) | Token ID                  |
-| market_id  | TEXT (FK) | Parent market             |
-| outcome    | TEXT      | Outcome name (Yes/No/etc) |
-| price      | DECIMAL   | Current price             |
-| raw        | JSONB     | Full API response         |
-| updated_at | TIMESTAMP | Last update               |
+| Field     | Type      | Description               |
+| --------- | --------- | ------------------------- |
+| id        | string    | Document ID (token_id)    |
+| marketId  | string    | Parent market ID          |
+| outcome   | string    | Outcome name (Yes/No/etc) |
+| price     | string    | Current price (decimal)   |
+| raw       | map       | Full API response         |
+| updatedAt | Timestamp | Last update               |
 
-#### `trades`
+#### `trades` Collection
 
-| Column     | Type      | Description       |
-| ---------- | --------- | ----------------- |
-| id         | TEXT (PK) | Trade ID from API |
-| market_id  | TEXT (FK) | Market            |
-| token_id   | TEXT (FK) | Token traded      |
-| maker      | TEXT      | Maker address     |
-| taker      | TEXT      | Taker address     |
-| side       | TEXT      | BUY/SELL          |
-| size       | DECIMAL   | Trade size        |
-| price      | DECIMAL   | Trade price       |
-| timestamp  | TIMESTAMP | Trade time        |
-| raw        | JSONB     | Full API response |
-| created_at | TIMESTAMP | Record creation   |
+| Field     | Type      | Description       |
+| --------- | --------- | ----------------- |
+| id        | string    | Document ID (trade_id) |
+| marketId  | string    | Market ID         |
+| tokenId   | string    | Token ID          |
+| maker     | string    | Maker address     |
+| taker     | string    | Taker address     |
+| side      | string    | BUY/SELL          |
+| size      | string    | Trade size (decimal) |
+| price     | string    | Trade price (decimal) |
+| timestamp | Timestamp | Trade time        |
+| raw       | map       | Full API response |
+| createdAt | Timestamp | Record creation   |
 
-#### `orderbook_snapshots`
+#### `orderbookSnapshots` Collection
 
-| Column    | Type        | Description         |
-| --------- | ----------- | ------------------- |
-| id        | SERIAL (PK) | Auto-increment      |
-| market_id | TEXT (FK)   | Market              |
-| token_id  | TEXT (FK)   | Token               |
-| best_bid  | DECIMAL     | Top bid price       |
-| best_ask  | DECIMAL     | Top ask price       |
-| bid_depth | DECIMAL     | Total bid liquidity |
-| ask_depth | DECIMAL     | Total ask liquidity |
-| spread    | DECIMAL     | Bid-ask spread      |
-| timestamp | TIMESTAMP   | Snapshot time       |
-| raw       | JSONB       | Optional depth data |
+| Field     | Type      | Description         |
+| --------- | --------- | ------------------- |
+| id        | string    | Auto-generated ID   |
+| marketId  | string    | Market ID           |
+| tokenId   | string    | Token ID            |
+| bestBid   | string    | Top bid price (decimal) |
+| bestAsk   | string    | Top ask price (decimal) |
+| bidDepth  | string    | Total bid liquidity (decimal) |
+| askDepth  | string    | Total ask liquidity (decimal) |
+| spread    | string    | Bid-ask spread (decimal) |
+| timestamp | Timestamp | Snapshot time       |
+| raw       | map       | Optional depth data |
 
-#### `wallet_positions`
+#### `walletPositions` Collection
 
-| Column    | Type        | Description              |
-| --------- | ----------- | ------------------------ |
-| id        | SERIAL (PK) | Auto-increment           |
-| wallet    | TEXT        | Wallet address           |
-| market_id | TEXT (FK)   | Market                   |
-| token_id  | TEXT (FK)   | Token                    |
-| position  | DECIMAL     | Position size            |
-| avg_price | DECIMAL     | Average entry (if known) |
-| timestamp | TIMESTAMP   | Snapshot time            |
+| Field     | Type      | Description              |
+| --------- | --------- | ------------------------ |
+| id        | string    | Auto-generated ID        |
+| wallet    | string    | Wallet address           |
+| marketId  | string    | Market ID                |
+| tokenId   | string    | Token ID                 |
+| position  | string    | Position size (decimal)  |
+| avgPrice  | string    | Average entry (decimal, optional) |
+| timestamp | Timestamp | Snapshot time            |
 
-#### `alerts`
+#### `alerts` Collection
 
-| Column       | Type      | Description                  |
-| ------------ | --------- | ---------------------------- |
-| id           | UUID (PK) | Alert ID                     |
-| market_id    | TEXT (FK) | Market                       |
-| trade_id     | TEXT (FK) | Triggering trade             |
-| wallet       | TEXT      | Wallet flagged               |
-| score        | DECIMAL   | Anomaly score                |
-| reasons      | JSONB     | Contributing factors         |
-| features     | JSONB     | Computed features            |
-| market_state | JSONB     | Market context at alert time |
-| created_at   | TIMESTAMP | Alert creation (immutable)   |
+| Field       | Type      | Description                  |
+| ----------- | --------- | ---------------------------- |
+| id          | string    | Auto-generated UUID          |
+| marketId    | string    | Market ID                    |
+| tradeId     | string    | Triggering trade ID          |
+| wallet      | string    | Wallet flagged               |
+| score       | string    | Anomaly score (decimal)      |
+| reasons     | map       | Contributing factors         |
+| features    | map       | Computed features            |
+| marketState | map       | Market context at alert time |
+| createdAt   | Timestamp | Alert creation (immutable)   |
+
+### Firestore Indexes
+
+Required composite indexes for efficient querying:
+
+```json
+{
+  "indexes": [
+    {
+      "collectionGroup": "trades",
+      "fields": [
+        { "fieldPath": "marketId", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "alerts",
+      "fields": [
+        { "fieldPath": "marketId", "order": "ASCENDING" },
+        { "fieldPath": "score", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "alerts",
+      "fields": [
+        { "fieldPath": "wallet", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "orderbookSnapshots",
+      "fields": [
+        { "fieldPath": "tokenId", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    }
+  ]
+}
+```
+
+### Firestore vs PostgreSQL Considerations
+
+| Aspect | PostgreSQL | Firestore (Current) |
+|--------|------------|---------------------|
+| **Joins** | Native SQL joins | No joins - use multiple queries or denormalize |
+| **Transactions** | Full ACID | Single document or batch (max 500 ops) |
+| **Aggregations** | SQL aggregates | Client-side or Cloud Functions |
+| **Decimal precision** | Native DECIMAL | Store as strings, parse in application |
+| **Time-series queries** | Standard SQL | Requires composite indexes |
+| **Schema enforcement** | DDL constraints | Application-level validation (Zod) |
 
 ---
 
@@ -365,11 +417,11 @@ Alerts are persisted when `score >= alertThreshold` OR any must-flag condition i
 
 ## External Dependencies
 
-| Service              | Purpose                   | Required Env Var     |
-| -------------------- | ------------------------- | -------------------- |
-| Polymarket CLOB API  | Trades, orders, orderbook | `POLYMARKET_API_URL` |
-| Polymarket Gamma API | Markets, events, tokens   | `GAMMA_API_URL`      |
-| PostgreSQL (Neon)    | Data persistence          | `DATABASE_URL`       |
+| Service              | Purpose                   | Required Env Var                                                  |
+| -------------------- | ------------------------- | ----------------------------------------------------------------- |
+| Polymarket CLOB API  | Trades, orders, orderbook | `POLYMARKET_API_URL`                                              |
+| Polymarket Gamma API | Markets, events, tokens   | `GAMMA_API_URL`                                                   |
+| Firebase / Firestore | Data persistence          | `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY` |
 
 ---
 
@@ -378,10 +430,28 @@ Alerts are persisted when `score >= alertThreshold` OR any must-flag condition i
 See `.env.example` for required configuration:
 
 ```
-DATABASE_URL=
+# Firebase Configuration
+FIREBASE_PROJECT_ID=your-project-id
+FIREBASE_CLIENT_EMAIL=firebase-adminsdk-xxxxx@your-project-id.iam.gserviceaccount.com
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+
+# Polymarket APIs
 POLYMARKET_API_URL=https://clob.polymarket.com
 GAMMA_API_URL=https://gamma-api.polymarket.com
 ```
+
+### Firebase Setup
+
+1. Create a Firebase project at [Firebase Console](https://console.firebase.google.com/)
+2. Enable Firestore Database in the project
+3. Generate a service account key:
+   - Go to Project Settings → Service Accounts
+   - Click "Generate new private key"
+   - Download the JSON file
+4. Extract credentials from the JSON file:
+   - `FIREBASE_PROJECT_ID` → `project_id` field
+   - `FIREBASE_CLIENT_EMAIL` → `client_email` field
+   - `FIREBASE_PRIVATE_KEY` → `private_key` field (preserve newlines)
 
 ---
 
@@ -392,6 +462,6 @@ Major architectural decisions should be recorded in `docs/decisions/`.
 | Date       | Decision                       | Rationale                                                                                                      |
 | ---------- | ------------------------------ | -------------------------------------------------------------------------------------------------------------- |
 | 2026-01-04 | Monorepo with pnpm + Turborepo | v2 requires external worker, v3 requires isolated executor; shared db/scoring/types packages avoid duplication |
+| 2026-01-04 | Firebase/Firestore for storage | Serverless-native, real-time capabilities for v2, integrated auth for future, no connection pooling concerns on Vercel |
 | TBD        | Use Vercel cron for v0 polling | Simplicity, no infrastructure overhead                                                                         |
-| TBD        | PostgreSQL with JSONB          | Flexibility for raw payloads, strong typing                                                                    |
 | TBD        | Defer WebSocket to v2          | Vercel serverless incompatible with long-lived connections                                                     |
