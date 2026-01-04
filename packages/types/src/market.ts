@@ -106,3 +106,55 @@ export interface GammaMarketsResponse {
   count?: number;
   next_cursor?: string;
 }
+
+// ============================================================================
+// CLOB API Types (External API Response Shapes)
+// ============================================================================
+
+/**
+ * Price level in an orderbook
+ */
+export interface CLOBOrderbookLevel {
+  /** Price at this level */
+  price: string;
+  /** Size/quantity at this level */
+  size: string;
+}
+
+/**
+ * Orderbook as returned by Polymarket CLOB API
+ */
+export interface CLOBOrderbook {
+  /** Market condition ID */
+  market: string;
+  /** Token/asset ID */
+  asset_id: string;
+  /** Hash of the orderbook state */
+  hash: string;
+  /** Timestamp of the orderbook snapshot */
+  timestamp: string;
+  /** Bid levels (sorted by price descending) */
+  bids: CLOBOrderbookLevel[];
+  /** Ask levels (sorted by price ascending) */
+  asks: CLOBOrderbookLevel[];
+}
+
+/**
+ * Response from CLOB book endpoint
+ */
+export interface CLOBBookResponse {
+  /** Orderbook data */
+  data?: CLOBOrderbook;
+  /** Market ID */
+  market?: string;
+  /** Asset ID */
+  asset_id?: string;
+}
+
+/**
+ * Options for fetching orderbook from CLOB API
+ */
+export interface FetchOrderbookOptions {
+  /** Token/asset ID */
+  tokenId: string;
+}
