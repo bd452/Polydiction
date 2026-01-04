@@ -1,0 +1,17 @@
+rules_version = '2';
+
+// Firestore Security Rules
+// NOTE: This project uses Firebase Admin SDK which bypasses security rules.
+// These rules are primarily for:
+// 1. Firebase Emulator local development
+// 2. Future client SDK access (if needed)
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default: deny all client access
+    // Admin SDK bypasses these rules entirely
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
