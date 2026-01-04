@@ -29,18 +29,18 @@
   - [X] Define API base URLs and keys (Polymarket, DB) { apps/web/src/env.ts }
 
 ### Data Model & Storage
-- [ ] Choose database (e.g., Postgres-compatible) < SUMMARY.md >
-- [ ] Design initial schema { packages/db/src/schema.ts }
-  - [ ] Markets table
-  - [ ] Tokens / outcomes table
-  - [ ] Trades table
-  - [ ] Orderbook snapshot table
-  - [ ] User activity / positions table
-  - [ ] Alerts table
-- [ ] Implement migrations { packages/db/drizzle/ }
+- [X] Choose database (e.g., Postgres-compatible) < SUMMARY.md >
+- [X] Design initial schema { packages/db/src/schema.ts }
+  - [X] Markets table
+  - [X] Tokens / outcomes table
+  - [X] Trades table
+  - [X] Orderbook snapshot table
+  - [X] User activity / positions table
+  - [X] Alerts table
+- [X] Implement migrations { packages/db/drizzle/ }
 - [ ] Implement DB access layer { packages/db/src/ }
   - [ ] Typed query helpers { packages/db/src/queries/ }
-  - [ ] JSONB support for raw payloads
+  - [X] JSONB support for raw payloads
 
 ### Market Universe Ingestion
 - [ ] Implement market discovery service { apps/web/src/services/markets.ts }
