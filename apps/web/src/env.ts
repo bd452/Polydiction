@@ -18,8 +18,14 @@ function getNodeEnv(): string {
 }
 
 export const env = {
-  /** Database connection string */
-  DATABASE_URL: getEnvVar("DATABASE_URL"),
+  /** Firebase project ID */
+  FIREBASE_PROJECT_ID: getEnvVar("FIREBASE_PROJECT_ID"),
+
+  /** Firebase service account client email */
+  FIREBASE_CLIENT_EMAIL: getEnvVar("FIREBASE_CLIENT_EMAIL"),
+
+  /** Firebase service account private key */
+  FIREBASE_PRIVATE_KEY: getEnvVar("FIREBASE_PRIVATE_KEY"),
 
   /** Polymarket CLOB API base URL */
   POLYMARKET_API_URL: getEnvVar("POLYMARKET_API_URL", false) || "https://clob.polymarket.com",

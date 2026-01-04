@@ -35,7 +35,7 @@
   - [x] Add Turbo remote caching (optional)
   - [x] Set up status checks and branch protection rules { docs/ops/branch-protection.md }
 
-### Data Model & Storage
+### Data Model & Storage ✓
 
 - [x] Choose database (e.g., Postgres-compatible) < SUMMARY.md >
 - [x] Design initial schema { packages/db/src/schema.ts }
@@ -45,102 +45,100 @@
   - [x] Orderbook snapshot table
   - [x] User activity / positions table
   - [x] Alerts table
-- [x] Implement migrations { packages/db/drizzle/ }
-- [ ] Implement DB access layer { packages/db/src/ }
-  - [ ] Typed query helpers { packages/db/src/queries/ }
+- [x] Implement DB access layer { packages/db/src/ }
+  - [x] Typed query helpers { packages/db/src/queries/ }
   - [x] JSONB support for raw payloads
 
-### Firebase Migration
+### Firebase Migration ✓
 
 Migrate from PostgreSQL/Drizzle to Firebase/Firestore for data storage.
 
-#### Package Dependencies { packages/db/package.json }
+#### Package Dependencies { packages/db/package.json } ✓
 
-- [ ] Remove `drizzle-orm` dependency
-- [ ] Remove `@neondatabase/serverless` dependency
-- [ ] Remove `drizzle-kit` dev dependency
-- [ ] Add `firebase-admin` dependency
+- [x] Remove `drizzle-orm` dependency
+- [x] Remove `@neondatabase/serverless` dependency
+- [x] Remove `drizzle-kit` dev dependency
+- [x] Add `firebase-admin` dependency
 
-#### Database Client { packages/db/src/client.ts }
+#### Database Client { packages/db/src/client.ts } ✓
 
-- [ ] Remove Neon/Drizzle client initialization
-- [ ] Implement Firebase Admin SDK initialization
-- [ ] Export Firestore database instance
-- [ ] Handle Firebase service account credentials
+- [x] Remove Neon/Drizzle client initialization
+- [x] Implement Firebase Admin SDK initialization
+- [x] Export Firestore database instance
+- [x] Handle Firebase service account credentials
 
-#### Schema Conversion { packages/db/src/schema.ts }
+#### Schema Conversion { packages/db/src/schema.ts } ✓
 
-- [ ] Remove Drizzle schema definitions (`pgTable`, `decimal`, `jsonb`, etc.)
-- [ ] Define TypeScript interfaces for Firestore documents
-  - [ ] `Market` document interface
-  - [ ] `Token` document interface
-  - [ ] `Trade` document interface
-  - [ ] `OrderbookSnapshot` document interface
-  - [ ] `WalletPosition` document interface
-  - [ ] `Alert` document interface
-- [ ] Add Zod schemas for runtime validation (optional)
-- [ ] Handle decimal precision (store as strings or scaled integers)
-- [ ] Handle timestamp conversions (Firestore Timestamp type)
+- [x] Remove Drizzle schema definitions (`pgTable`, `decimal`, `jsonb`, etc.)
+- [x] Define TypeScript interfaces for Firestore documents
+  - [x] `Market` document interface
+  - [x] `Token` document interface
+  - [x] `Trade` document interface
+  - [x] `OrderbookSnapshot` document interface
+  - [x] `WalletPosition` document interface
+  - [x] `Alert` document interface
+- [x] Handle decimal precision (store as strings or scaled integers)
+- [x] Handle timestamp conversions (Firestore Timestamp type)
 
-#### Firestore Collections { packages/db/src/collections.ts }
+#### Firestore Collections { packages/db/src/collections.ts } ✓
 
-- [ ] Create new collections module
-- [ ] Define collection references
-  - [ ] `markets` collection
-  - [ ] `tokens` collection (or subcollection under markets)
-  - [ ] `trades` collection
-  - [ ] `orderbookSnapshots` collection
-  - [ ] `walletPositions` collection
-  - [ ] `alerts` collection
-- [ ] Define composite indexes for common queries { firestore.indexes.json }
-  - [ ] Trades by market + timestamp
-  - [ ] Alerts by market + score
-  - [ ] Alerts by wallet + timestamp
-  - [ ] Orderbook snapshots by token + timestamp
+- [x] Create new collections module
+- [x] Define collection references
+  - [x] `markets` collection
+  - [x] `tokens` collection (or subcollection under markets)
+  - [x] `trades` collection
+  - [x] `orderbookSnapshots` collection
+  - [x] `walletPositions` collection
+  - [x] `alerts` collection
+- [x] Define composite indexes for common queries { firestore.indexes.json }
+  - [x] Trades by market + timestamp
+  - [x] Alerts by market + score
+  - [x] Alerts by wallet + timestamp
+  - [x] Orderbook snapshots by token + timestamp
 
-#### Remove Drizzle Artifacts
+#### Remove Drizzle Artifacts ✓
 
-- [ ] Delete `packages/db/drizzle/` folder (migrations no longer needed)
-- [ ] Delete `packages/db/drizzle.config.ts`
-- [ ] Remove Drizzle-related scripts from `packages/db/package.json`
+- [x] Delete `packages/db/drizzle/` folder (migrations no longer needed)
+- [x] Delete `packages/db/drizzle.config.ts`
+- [x] Remove Drizzle-related scripts from `packages/db/package.json`
 
-#### Environment Configuration
+#### Environment Configuration ✓
 
-- [ ] Update `.env.example` with Firebase variables
-  - [ ] Remove `DATABASE_URL`
-  - [ ] Add `FIREBASE_PROJECT_ID`
-  - [ ] Add `FIREBASE_CLIENT_EMAIL`
-  - [ ] Add `FIREBASE_PRIVATE_KEY`
-- [ ] Update `apps/web/src/env.ts` with Firebase env validation
-- [ ] Document service account setup in README or docs
+- [x] Update `.env.example` with Firebase variables
+  - [x] Remove `DATABASE_URL`
+  - [x] Add `FIREBASE_PROJECT_ID`
+  - [x] Add `FIREBASE_CLIENT_EMAIL`
+  - [x] Add `FIREBASE_PRIVATE_KEY`
+- [x] Update `apps/web/src/env.ts` with Firebase env validation
+- [x] Document service account setup in README or docs
 
-#### Query Helpers { packages/db/src/queries/ }
+#### Query Helpers { packages/db/src/queries/ } ✓
 
-- [ ] Implement Firestore query helpers
-  - [ ] `markets.ts` - market CRUD operations
-  - [ ] `tokens.ts` - token CRUD operations
-  - [ ] `trades.ts` - trade ingestion with deduplication
-  - [ ] `orderbook.ts` - orderbook snapshot storage
-  - [ ] `positions.ts` - wallet position snapshots
-  - [ ] `alerts.ts` - alert persistence
-  - [ ] `baselines.ts` - rolling baseline cache
-- [ ] Handle Firestore query limitations
-  - [ ] No joins - implement denormalization strategy
-  - [ ] Limited compound queries - design around constraints
-  - [ ] Client-side aggregations where needed
+- [x] Implement Firestore query helpers
+  - [x] `markets.ts` - market CRUD operations
+  - [x] `tokens.ts` - token CRUD operations
+  - [x] `trades.ts` - trade ingestion with deduplication
+  - [x] `orderbook.ts` - orderbook snapshot storage
+  - [x] `positions.ts` - wallet position snapshots
+  - [x] `alerts.ts` - alert persistence
+  - [x] `baselines.ts` - rolling baseline cache
+- [x] Handle Firestore query limitations
+  - [x] No joins - implement denormalization strategy
+  - [x] Limited compound queries - design around constraints
+  - [x] Client-side aggregations where needed
 
-#### Architecture Documentation { SUMMARY.md }
+#### Architecture Documentation { SUMMARY.md } ✓
 
-- [ ] Update External Dependencies table (PostgreSQL → Firebase)
-- [ ] Update High-Level Architecture diagram
-- [ ] Update Data Model section for Firestore collections
-- [ ] Add Decision Log entry for Firebase migration
+- [x] Update External Dependencies table (PostgreSQL → Firebase)
+- [x] Update High-Level Architecture diagram
+- [x] Update Data Model section for Firestore collections
+- [x] Add Decision Log entry for Firebase migration
 
-#### Testing & CI/CD
+#### Testing & CI/CD ✓
 
-- [ ] Remove PostgreSQL-related CI setup { .github/workflows/ci.yml }
+- [x] Remove PostgreSQL-related CI setup { .github/workflows/ci.yml }
+- [x] Add Firebase credentials as GitHub secrets
 - [ ] Add Firebase emulator configuration (optional)
-- [ ] Add Firebase credentials as GitHub secrets
 - [ ] Validate Firestore security rules (if applicable)
 
 ### Market Universe Ingestion

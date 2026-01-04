@@ -22,9 +22,19 @@ jobs:
     # 2. Set TURBO_TOKEN in GitHub repo Settings > Secrets > Actions
     # 3. Set TURBO_TEAM to your Vercel team slug (or username for personal accounts)
     # If not set, Turbo will use local caching only
+    #
+    # Firebase Configuration (required for integration tests)
+    # Add these secrets for Firebase/Firestore access:
+    # - FIREBASE_PROJECT_ID: Your Firebase project ID
+    # - FIREBASE_CLIENT_EMAIL: Service account email
+    # - FIREBASE_PRIVATE_KEY: Service account private key (with newlines)
     env:
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
       TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+      # Firebase credentials (used by tests if configured)
+      FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+      FIREBASE_CLIENT_EMAIL: ${{ secrets.FIREBASE_CLIENT_EMAIL }}
+      FIREBASE_PRIVATE_KEY: ${{ secrets.FIREBASE_PRIVATE_KEY }}
 
     steps:
       - name: Checkout
