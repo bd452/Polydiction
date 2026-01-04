@@ -14,8 +14,8 @@ import { syncMarketsFromGamma } from "@/services/markets";
 import { env } from "@/env";
 
 /**
- * Force dynamic rendering - this route should never be statically analyzed
- * because it depends on runtime environment variables and external services.
+ * Ensure this route is never statically rendered.
+ * Next.js auto-detects this from request header usage, but we're explicit.
  */
 export const dynamic = "force-dynamic";
 
