@@ -207,6 +207,33 @@ The system supports anomaly detection across all Polymarket market categories:
 
 ## Anomaly Detection Overview
 
+### Detection Goal
+
+**Insider Detection (Exclusively)** — The system aims to detect trades that suggest the trader has access to non-public information. This is distinct from "smart money" detection (following skilled traders regardless of information source).
+
+Key characteristics of insider-indicative trades:
+- Unusually large positions taken shortly before material news
+- New or dormant wallets suddenly making significant trades
+- Aggressive execution (paying spread, lifting offers) suggesting urgency
+- Timing correlation with subsequent price-moving events
+
+**Note**: Detection is NOT restricted to markets with defined end dates. Events can resolve unexpectedly (e.g., geopolitical events, sudden announcements).
+
+### False Positive Tolerance
+
+**High Recall Approach** — Initial false positives are acceptable. The priority is to avoid missing true insider signals.
+
+The system uses an **adjustable sensitivity value**:
+- v0: Defined as a constant (`ALERT_SENSITIVITY`) in configuration
+- v1+: UI-adjustable per user or globally
+
+```typescript
+// Sensitivity range: 0.0 (most permissive) to 1.0 (most strict)
+// Lower values = more alerts (higher recall, more false positives)
+// Higher values = fewer alerts (higher precision, may miss signals)
+const ALERT_SENSITIVITY = 0.3; // Start permissive
+```
+
 ### Feature Set (v0)
 
 1. **Trade Size vs Market Median** — How large is this trade relative to typical trades?
@@ -216,6 +243,8 @@ The system supports anomaly detection across all Polymarket market categories:
 5. **Position Concentration** — How concentrated is the wallet's position?
 6. **Ramp Speed** — How quickly is the wallet building a position?
 7. **Timing vs Market End** — Trades close to resolution may be more informative
+8. **Wallet Age/Activity** — New or dormant wallets are more suspicious
+9. **Dollar Value** — Absolute size matters (a $50k trade is noteworthy regardless of %)
 
 ### Scoring Model (v0)
 
@@ -225,7 +254,38 @@ Initial approach: Weighted linear combination of normalized features.
 score = Σ (weight_i × normalized_feature_i)
 ```
 
-Alerts are persisted when `score >= threshold`.
+Each feature is normalized to [0, 1] range. Weights reflect insider-detection priority:
+
+| Feature | Weight | Rationale |
+|---------|--------|-----------|
+| Trade size vs median | 0.15 | Large relative trades are notable |
+| Trade size vs depth | 0.15 | Consuming liquidity suggests urgency |
+| Aggressiveness | 0.20 | Paying spread indicates time-sensitivity |
+| Wallet burst | 0.15 | Rapid accumulation suggests conviction |
+| Position concentration | 0.10 | All-in bets are suspicious |
+| Ramp speed | 0.10 | Fast position building |
+| Wallet freshness | 0.10 | New wallets making big trades |
+| Dollar value | 0.05 | Absolute size as tiebreaker |
+
+### Alert Thresholds ("Interesting" Definition)
+
+An alert is generated when the weighted score exceeds a dynamic threshold based on sensitivity:
+
+```typescript
+// Base threshold adjusted by sensitivity
+const alertThreshold = 0.25 + (ALERT_SENSITIVITY * 0.5);
+// At sensitivity 0.3: threshold = 0.25 + 0.15 = 0.40
+// At sensitivity 0.0: threshold = 0.25 (very permissive)
+// At sensitivity 1.0: threshold = 0.75 (very strict)
+```
+
+**Automatic "Must-Flag" Conditions** (bypass scoring, always alert):
+- Single trade > $25,000 USD equivalent
+- Wallet accumulates > $50,000 position in < 1 hour
+- New wallet (< 7 days old) makes trade > $10,000
+- Position exceeds 5% of market's total liquidity
+
+Alerts are persisted when `score >= alertThreshold` OR any must-flag condition is met.
 
 ---
 

@@ -4,15 +4,15 @@
 
 ## v0 — Scanner & Logging (No UI, No Live, No Execution)
 
-### Core Product Definition
+### Core Product Definition ✓
 - [X] Define product scope and constraints { SUMMARY.md }
   - [X] Explicitly exclude live notifications and trading { SUMMARY.md }
   - [X] Explicitly exclude persistent websocket connections { SUMMARY.md }
   - [X] Define supported market types (elections, sports, crypto, etc.) { SUMMARY.md }
-- [ ] Define anomaly detection goals
-  - [ ] Decide whether goal is insider detection vs. "smart money" detection
-  - [ ] Decide whether false positives are acceptable early on
-  - [ ] Define what "interesting" means in measurable terms
+- [X] Define anomaly detection goals { SUMMARY.md }
+  - [X] Decide whether goal is insider detection vs. "smart money" detection { SUMMARY.md }
+  - [X] Decide whether false positives are acceptable early on { SUMMARY.md }
+  - [X] Define what "interesting" means in measurable terms { SUMMARY.md }
 
 ### Repository & Environment Setup
 - [ ] Initialize empty Git repository
