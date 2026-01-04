@@ -4,174 +4,177 @@
 
 ## v0 — Scanner & Logging (No UI, No Live, No Execution)
 
-### Core Product Definition
-- [ ] Define product scope and constraints
-  - [ ] Explicitly exclude live notifications and trading
-  - [ ] Explicitly exclude persistent websocket connections
-  - [ ] Define supported market types (elections, sports, crypto, etc.)
-- [ ] Define anomaly detection goals
-  - [ ] Decide whether goal is insider detection vs. "smart money" detection
-  - [ ] Decide whether false positives are acceptable early on
-  - [ ] Define what "interesting" means in measurable terms
+### Core Product Definition ✓
+- [X] Define product scope and constraints { SUMMARY.md }
+  - [X] Explicitly exclude live notifications and trading { SUMMARY.md }
+  - [X] Explicitly exclude persistent websocket connections { SUMMARY.md }
+  - [X] Define supported market types (elections, sports, crypto, etc.) { SUMMARY.md }
+- [X] Define anomaly detection goals { SUMMARY.md }
+  - [X] Decide whether goal is insider detection vs. "smart money" detection { SUMMARY.md }
+  - [X] Decide whether false positives are acceptable early on { SUMMARY.md }
+  - [X] Define what "interesting" means in measurable terms { SUMMARY.md }
 
-### Repository & Environment Setup
-- [ ] Initialize empty Git repository
-  - [ ] Configure TypeScript + Node target
-  - [ ] Set up linting / formatting
-- [ ] Initialize Next.js app (API-first)
-  - [ ] Enable App Router
-  - [ ] Disable unnecessary frontend scaffolding
-- [ ] Configure environment variable handling
-  - [ ] Add `.env.example`
-  - [ ] Define API base URLs and keys (Polymarket, DB)
+### Repository & Environment Setup ✓
+- [X] Initialize monorepo structure { package.json, pnpm-workspace.yaml, turbo.json }
+  - [X] Configure TypeScript + Node target { tsconfig.json }
+  - [X] Set up linting / formatting { eslint.config.mjs, .prettierrc }
+  - [X] Set up pnpm workspaces { pnpm-workspace.yaml }
+  - [X] Set up Turborepo { turbo.json }
+  - [X] Create shared packages structure { packages/db, packages/scoring, packages/types }
+- [X] Initialize Next.js app (API-first) { apps/web }
+  - [X] Enable App Router { apps/web/src/app }
+  - [X] Disable unnecessary frontend scaffolding
+- [X] Configure environment variable handling
+  - [X] Add `.env.example` { .env.example }
+  - [X] Define API base URLs and keys (Polymarket, DB) { apps/web/src/env.ts }
 
 ### Data Model & Storage
-- [ ] Choose database (e.g., Postgres-compatible)
-- [ ] Design initial schema
+- [ ] Choose database (e.g., Postgres-compatible) < SUMMARY.md >
+- [ ] Design initial schema { packages/db/src/schema.ts }
   - [ ] Markets table
   - [ ] Tokens / outcomes table
   - [ ] Trades table
   - [ ] Orderbook snapshot table
   - [ ] User activity / positions table
   - [ ] Alerts table
-- [ ] Implement migrations
-- [ ] Implement DB access layer
-  - [ ] Typed query helpers
+- [ ] Implement migrations { packages/db/drizzle/ }
+- [ ] Implement DB access layer { packages/db/src/ }
+  - [ ] Typed query helpers { packages/db/src/queries/ }
   - [ ] JSONB support for raw payloads
 
 ### Market Universe Ingestion
-- [ ] Implement market discovery service
+- [ ] Implement market discovery service { apps/web/src/services/markets.ts }
   - [ ] Fetch active markets from Polymarket metadata API
-  - [ ] Normalize markets, events, and tokens
-  - [ ] Store/update market records idempotently
-- [ ] Schedule periodic market refresh
-  - [ ] Set up Vercel cron job
+  - [ ] Normalize markets, events, and tokens { packages/types/src/market.ts }
+  - [ ] Store/update market records idempotently { packages/db/src/queries/markets.ts }
+- [ ] Schedule periodic market refresh { apps/web/src/app/api/cron/markets/route.ts }
+  - [ ] Set up Vercel cron job { apps/web/vercel.json }
   - [ ] Ensure safe re-runs
 
 ### Trade & State Ingestion (Polling-Based)
-- [ ] Implement trade polling service
+- [ ] Implement trade polling service { apps/web/src/services/trades.ts }
   - [ ] Fetch recent trades per market
   - [ ] Handle pagination / cursors
-  - [ ] Deduplicate trades
-- [ ] Implement orderbook snapshot polling
+  - [ ] Deduplicate trades { packages/db/src/queries/trades.ts }
+- [ ] Implement orderbook snapshot polling { apps/web/src/services/orderbook.ts }
   - [ ] Fetch top-of-book + depth metrics
-  - [ ] Store lightweight snapshots only
-- [ ] Implement user position polling (where available)
+  - [ ] Store lightweight snapshots only { packages/db/src/queries/orderbook.ts }
+- [ ] Implement user position polling (where available) { apps/web/src/services/positions.ts }
   - [ ] Fetch top holders or position deltas
-  - [ ] Store time-series snapshots
+  - [ ] Store time-series snapshots { packages/db/src/queries/positions.ts }
 
 ### Feature Computation Layer
-- [ ] Define feature set
-  - [ ] Trade size vs market median
-  - [ ] Trade size vs available depth
-  - [ ] Aggressiveness (taker/maker, spread crossing)
-  - [ ] Wallet burst behavior
-  - [ ] Position concentration and ramp speed
-  - [ ] Timing vs market end
-- [ ] Implement feature computation
-  - [ ] Normalize per-market
-  - [ ] Cache rolling baselines
+- [ ] Define feature set { packages/scoring/src/features/ } < SUMMARY.md >
+  - [ ] Trade size vs market median { packages/scoring/src/features/trade-size.ts }
+  - [ ] Trade size vs available depth { packages/scoring/src/features/depth-ratio.ts }
+  - [ ] Aggressiveness (taker/maker, spread crossing) { packages/scoring/src/features/aggressiveness.ts }
+  - [ ] Wallet burst behavior { packages/scoring/src/features/wallet-burst.ts }
+  - [ ] Position concentration and ramp speed { packages/scoring/src/features/position.ts }
+  - [ ] Timing vs market end { packages/scoring/src/features/timing.ts }
+- [ ] Implement feature computation { packages/scoring/src/extract.ts }
+  - [ ] Normalize per-market { packages/scoring/src/normalize.ts }
+  - [ ] Cache rolling baselines { packages/db/src/queries/baselines.ts }
 - [ ] Validate feature stability on re-runs
 
 ### Anomaly Scoring
-- [ ] Define scoring model (weighted linear or heuristic)
-- [ ] Implement score computation
+- [ ] Define scoring model (weighted linear or heuristic) { packages/scoring/src/scorer.ts } < SUMMARY.md >
+- [ ] Implement score computation { packages/scoring/src/scorer.ts }
   - [ ] Compute total score
   - [ ] Extract top contributing factors
-- [ ] Define "interesting" threshold
-- [ ] Persist alerts
+- [ ] Define "interesting" threshold { packages/scoring/src/config.ts } < SUMMARY.md >
+- [ ] Persist alerts { packages/db/src/queries/alerts.ts }
   - [ ] Include score, reasons, references
   - [ ] Mark alerts as immutable logs
 
 ### Scheduling & Reliability
-- [ ] Configure cron cadence
-- [ ] Add rate limit handling
-- [ ] Add retry / backoff logic
-- [ ] Add basic logging and metrics
+- [ ] Configure cron cadence { apps/web/vercel.json }
+- [ ] Add rate limit handling { apps/web/src/lib/rate-limit.ts }
+- [ ] Add retry / backoff logic { apps/web/src/lib/retry.ts }
+- [ ] Add basic logging and metrics { apps/web/src/lib/logger.ts }
 
 ---
 
 ## v1 — Read-Only App & Querying
 
 ### Application Shell
-- [ ] Enable frontend routes
-- [ ] Set up basic layout (no auth)
-- [ ] Define navigation structure
+- [ ] Enable frontend routes { apps/web/src/app/(ui)/ }
+- [ ] Set up basic layout (no auth) { apps/web/src/app/(ui)/layout.tsx }
+- [ ] Define navigation structure { apps/web/src/components/nav.tsx }
 
 ### API Layer
-- [ ] Implement alerts API
+- [ ] Implement alerts API { apps/web/src/app/api/alerts/route.ts }
   - [ ] Filter by score
   - [ ] Filter by market
   - [ ] Filter by wallet
   - [ ] Time-based pagination
-- [ ] Implement markets API
-- [ ] Implement wallet activity API
-- [ ] Implement single-alert detail API
+- [ ] Implement markets API { apps/web/src/app/api/markets/route.ts }
+- [ ] Implement wallet activity API { apps/web/src/app/api/wallets/route.ts }
+- [ ] Implement single-alert detail API { apps/web/src/app/api/alerts/[id]/route.ts }
 
 ### UI Pages
-- [ ] Alerts feed page
+- [ ] Alerts feed page { apps/web/src/app/(ui)/alerts/page.tsx }
   - [ ] Sort by score / time
   - [ ] Highlight reason summary
-- [ ] Market detail page
+- [ ] Market detail page { apps/web/src/app/(ui)/markets/[id]/page.tsx }
   - [ ] Market metadata
   - [ ] Alerts within market
   - [ ] Trade context
-- [ ] Wallet detail page
+- [ ] Wallet detail page { apps/web/src/app/(ui)/wallets/[address]/page.tsx }
   - [ ] Position history
   - [ ] Alerts involving wallet
-- [ ] Alert detail view
+- [ ] Alert detail view { apps/web/src/app/(ui)/alerts/[id]/page.tsx }
   - [ ] Raw trade data
   - [ ] Feature breakdown
   - [ ] Market state at time of trade
 
 ### Data Presentation
-- [ ] Implement formatting helpers
+- [ ] Implement formatting helpers { apps/web/src/lib/format.ts }
   - [ ] Price / probability formatting
   - [ ] Size normalization
-- [ ] Implement lightweight charts (static snapshots only)
+- [ ] Implement lightweight charts (static snapshots only) { apps/web/src/components/charts/ }
 - [ ] Add linking between markets, wallets, alerts
 
 ### Hardening
-- [ ] Add request validation
-- [ ] Add API rate limits
+- [ ] Add request validation { apps/web/src/lib/validation.ts }
+- [ ] Add API rate limits { apps/web/src/middleware.ts }
 - [ ] Add basic caching for heavy queries
-- [ ] Add health check endpoint
+- [ ] Add health check endpoint { apps/web/src/app/api/health/route.ts }
 
 ---
 
 ## v2 — Live Detection & Notifications
 
 ### Live Data Ingestion
-- [ ] Decide streaming strategy (external worker vs enhanced polling)
-- [ ] Implement websocket ingestion service (off-Vercel)
-  - [ ] Subscribe to market-level feeds
-  - [ ] Parse and normalize events
-- [ ] Implement ingestion endpoint / queue bridge
-- [ ] Ensure idempotent ingestion
+- [ ] Decide streaming strategy (external worker vs enhanced polling) < SUMMARY.md >
+- [ ] Implement websocket ingestion service (off-Vercel) { apps/worker/src/ }
+  - [ ] Subscribe to market-level feeds { apps/worker/src/ws-client.ts }
+  - [ ] Parse and normalize events { apps/worker/src/normalize.ts }
+- [ ] Implement ingestion endpoint / queue bridge { apps/web/src/app/api/ingest/route.ts }
+- [ ] Ensure idempotent ingestion { packages/db/src/queries/trades.ts }
 
 ### Near-Real-Time Scoring
-- [ ] Adapt feature computation for streaming data
-- [ ] Ensure rolling baselines update safely
-- [ ] Trigger scoring on new events
+- [ ] Adapt feature computation for streaming data { packages/scoring/src/streaming.ts }
+- [ ] Ensure rolling baselines update safely { packages/db/src/queries/baselines.ts }
+- [ ] Trigger scoring on new events { apps/worker/src/pipeline.ts }
 - [ ] Emit alerts immediately on threshold breach
 
 ### Notification System
-- [ ] Define notification triggers
+- [ ] Define notification triggers { apps/web/src/services/notifications.ts }
 - [ ] Implement notification queue
 - [ ] Implement email notifications
 - [ ] Implement SMS notifications
 - [ ] Implement push / web notifications
-- [ ] Add per-channel opt-in flags
+- [ ] Add per-channel opt-in flags { packages/db/src/schema.ts }
 - [ ] Add rate limiting and deduplication
 
 ### User Preferences
-- [ ] Define user model (lightweight)
-- [ ] Store notification preferences
+- [ ] Define user model (lightweight) { packages/db/src/schema.ts }
+- [ ] Store notification preferences { packages/db/src/queries/users.ts }
 - [ ] Allow per-market / per-score thresholds
 
 ### Monitoring & Safety
 - [ ] Add alert volume monitoring
-- [ ] Add kill switch for live detection
+- [ ] Add kill switch for live detection { apps/worker/src/kill-switch.ts }
 - [ ] Add ingestion failure alarms
 
 ---
@@ -179,36 +182,36 @@
 ## v3 — Automated Trade Execution
 
 ### Risk & Policy Framework
-- [ ] Define global risk limits
-- [ ] Define per-market exposure caps
-- [ ] Define per-alert trade size limits
-- [ ] Define loss and drawdown limits
-- [ ] Implement emergency kill switch
+- [ ] Define global risk limits { apps/executor/src/risk/limits.ts }
+- [ ] Define per-market exposure caps { apps/executor/src/risk/market-caps.ts }
+- [ ] Define per-alert trade size limits { apps/executor/src/risk/sizing.ts }
+- [ ] Define loss and drawdown limits { apps/executor/src/risk/drawdown.ts }
+- [ ] Implement emergency kill switch { apps/executor/src/risk/kill-switch.ts }
 
 ### Execution Service
-- [ ] Isolate execution into separate service
-- [ ] Secure API keys and signing logic
-- [ ] Implement order construction
-- [ ] Implement slippage and timeout controls
-- [ ] Implement order tracking and reconciliation
+- [ ] Isolate execution into separate service { apps/executor/ }
+- [ ] Secure API keys and signing logic { apps/executor/src/auth/ }
+- [ ] Implement order construction { apps/executor/src/orders/build.ts }
+- [ ] Implement slippage and timeout controls { apps/executor/src/orders/controls.ts }
+- [ ] Implement order tracking and reconciliation { apps/executor/src/orders/tracking.ts }
 
 ### Strategy Engine
-- [ ] Define initial tailing strategy
+- [ ] Define initial tailing strategy { apps/executor/src/strategy/tail.ts }
   - [ ] Minimum score threshold
   - [ ] Confirmation requirements
-- [ ] Implement probing order logic
-- [ ] Implement scale-in logic
-- [ ] Implement stop conditions
-- [ ] Implement post-trade evaluation
+- [ ] Implement probing order logic { apps/executor/src/strategy/probe.ts }
+- [ ] Implement scale-in logic { apps/executor/src/strategy/scale.ts }
+- [ ] Implement stop conditions { apps/executor/src/strategy/stops.ts }
+- [ ] Implement post-trade evaluation { apps/executor/src/strategy/evaluate.ts }
 
 ### Integration
-- [ ] Connect alerts to strategy engine
+- [ ] Connect alerts to strategy engine { apps/executor/src/pipeline.ts }
 - [ ] Connect strategy engine to execution service
-- [ ] Persist trades and outcomes
-- [ ] Update positions and PnL tracking
+- [ ] Persist trades and outcomes { packages/db/src/queries/executions.ts }
+- [ ] Update positions and PnL tracking { packages/db/src/queries/pnl.ts }
 
 ### Evaluation & Iteration
 - [ ] Measure slippage vs signal originator
 - [ ] Measure net profitability
-- [ ] Track false positives
-- [ ] Adjust scoring weights and strategy rules
+- [ ] Track false positives { packages/db/src/queries/alerts.ts }
+- [ ] Adjust scoring weights and strategy rules { packages/scoring/src/config.ts }

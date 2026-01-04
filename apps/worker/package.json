@@ -1,0 +1,13 @@
+{
+  "name": "@polydiction/worker",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "WebSocket ingestion worker for live data (v2)",
+  "scripts": {
+    "dev": "echo 'Worker not implemented until v2'",
+    "build": "echo 'Worker not implemented until v2'",
+    "typecheck": "echo 'Worker not implemented until v2'",
+    "lint": "echo 'Worker not implemented until v2'"
+  }
+}
