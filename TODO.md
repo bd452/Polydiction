@@ -32,7 +32,7 @@
 - [ ] Configure GitHub CI/CD { .github/workflows/ }
   - [x] Create main CI workflow for builds, tests, and lints { .github/workflows/ci.yml }
   - [x] Configure pnpm caching for faster builds
-  - [ ] Add Turbo remote caching (optional)
+  - [x] Add Turbo remote caching (optional)
   - [ ] Set up status checks and branch protection rules
 
 ### Data Model & Storage
