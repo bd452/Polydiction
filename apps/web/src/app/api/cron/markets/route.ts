@@ -14,6 +14,12 @@ import { syncMarketsFromGamma } from "@/services/markets";
 import { env } from "@/env";
 
 /**
+ * Force dynamic rendering - this route should never be statically analyzed
+ * because it depends on runtime environment variables and external services.
+ */
+export const dynamic = "force-dynamic";
+
+/**
  * Get CRON_SECRET from environment (optional)
  */
 function getCronSecret(): string | undefined {
