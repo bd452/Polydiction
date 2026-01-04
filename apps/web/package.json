@@ -14,6 +14,7 @@
     "@polydiction/db": "workspace:*",
     "@polydiction/scoring": "workspace:*",
     "@polydiction/types": "workspace:*",
+    "firebase-admin": "^13.0.2",
     "next": "^15.1.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"

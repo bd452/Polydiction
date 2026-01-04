@@ -13,11 +13,6 @@ export type MarketCategory =
   | "other";
 
 /**
- * Market status
- */
-export type MarketStatus = "active" | "closed" | "resolved";
-
-/**
  * A prediction market on Polymarket
  */
 export interface Market {
@@ -27,7 +22,7 @@ export interface Market {
   description: string;
   category: MarketCategory;
   endDate: Timestamp | null;
-  status: MarketStatus;
+  active: boolean;
   createdAt: Timestamp;
   updatedAt: Timestamp;
   raw: RawPayload;
@@ -66,4 +61,48 @@ export interface OrderbookSnapshot {
  */
 export interface MarketWithTokens extends Market {
   tokens: Token[];
+}
+
+// ============================================================================
+// Gamma API Types (External API Response Shapes)
+// ============================================================================
+
+/**
+ * Token/outcome as returned by Polymarket Gamma API
+ */
+export interface GammaToken {
+  token_id: string;
+  outcome: string;
+  price?: string;
+  winner?: boolean;
+}
+
+/**
+ * Market as returned by Polymarket Gamma API
+ * Note: This is a subset of commonly used fields; full response stored in raw
+ */
+export interface GammaMarket {
+  condition_id: string;
+  question_id?: string;
+  slug?: string;
+  question: string;
+  description?: string;
+  category?: string;
+  end_date_iso?: string;
+  game_start_time?: string;
+  active: boolean;
+  closed: boolean;
+  archived?: boolean;
+  tokens: GammaToken[];
+  /** Additional fields from API response */
+  [key: string]: unknown;
+}
+
+/**
+ * Paginated response from Gamma API
+ */
+export interface GammaMarketsResponse {
+  data?: GammaMarket[];
+  count?: number;
+  next_cursor?: string;
 }

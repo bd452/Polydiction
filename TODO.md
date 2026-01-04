@@ -143,13 +143,13 @@ Migrate from PostgreSQL/Drizzle to Firebase/Firestore for data storage.
 
 ### Market Universe Ingestion
 
-- [ ] Implement market discovery service { apps/web/src/services/markets.ts }
-  - [ ] Fetch active markets from Polymarket metadata API
-  - [ ] Normalize markets, events, and tokens { packages/types/src/market.ts }
-  - [ ] Store/update market records idempotently { packages/db/src/queries/markets.ts }
-- [ ] Schedule periodic market refresh { apps/web/src/app/api/cron/markets/route.ts }
-  - [ ] Set up Vercel cron job { apps/web/vercel.json }
-  - [ ] Ensure safe re-runs
+- [x] Implement market discovery service { apps/web/src/services/markets.ts }
+  - [x] Fetch active markets from Polymarket metadata API
+  - [x] Normalize markets, events, and tokens { packages/types/src/market.ts }
+  - [x] Store/update market records idempotently { packages/db/src/queries/markets.ts }
+- [x] Schedule periodic market refresh { apps/web/src/app/api/cron/markets/route.ts }
+  - [x] Set up Vercel cron job { apps/web/vercel.json }
+  - [x] Ensure safe re-runs
 
 ### Trade & State Ingestion (Polling-Based)
 
