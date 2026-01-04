@@ -1,6 +1,8 @@
 /**
  * Environment variable configuration
- * Validates required env vars at runtime
+ *
+ * Uses lazy validation - environment variables are only validated when accessed,
+ * not at module load time. This allows Next.js to build without all env vars present.
  */
 
 function getEnvVar(name: string, required = true): string {
@@ -13,32 +15,54 @@ function getEnvVar(name: string, required = true): string {
 
 function getNodeEnv(): string {
   // Cast to unknown first to satisfy strict linting
-  const env = process.env.NODE_ENV as unknown;
-  return typeof env === "string" ? env : "development";
+  const nodeEnv = process.env.NODE_ENV as unknown;
+  return typeof nodeEnv === "string" ? nodeEnv : "development";
 }
 
+/**
+ * Environment configuration object with lazy validation.
+ *
+ * Required environment variables are only validated when accessed,
+ * allowing the build to succeed without them present.
+ */
 export const env = {
   /** Firebase project ID */
-  FIREBASE_PROJECT_ID: getEnvVar("FIREBASE_PROJECT_ID"),
+  get FIREBASE_PROJECT_ID(): string {
+    return getEnvVar("FIREBASE_PROJECT_ID");
+  },
 
   /** Firebase service account client email */
-  FIREBASE_CLIENT_EMAIL: getEnvVar("FIREBASE_CLIENT_EMAIL"),
+  get FIREBASE_CLIENT_EMAIL(): string {
+    return getEnvVar("FIREBASE_CLIENT_EMAIL");
+  },
 
   /** Firebase service account private key */
-  FIREBASE_PRIVATE_KEY: getEnvVar("FIREBASE_PRIVATE_KEY"),
+  get FIREBASE_PRIVATE_KEY(): string {
+    return getEnvVar("FIREBASE_PRIVATE_KEY");
+  },
 
   /** Polymarket CLOB API base URL */
-  POLYMARKET_API_URL: getEnvVar("POLYMARKET_API_URL", false) || "https://clob.polymarket.com",
+  get POLYMARKET_API_URL(): string {
+    return getEnvVar("POLYMARKET_API_URL", false) || "https://clob.polymarket.com";
+  },
 
   /** Polymarket Gamma API base URL */
-  GAMMA_API_URL: getEnvVar("GAMMA_API_URL", false) || "https://gamma-api.polymarket.com",
+  get GAMMA_API_URL(): string {
+    return getEnvVar("GAMMA_API_URL", false) || "https://gamma-api.polymarket.com";
+  },
 
   /** Alert sensitivity (0.0 - 1.0) */
-  ALERT_SENSITIVITY: parseFloat(getEnvVar("ALERT_SENSITIVITY", false) || "0.3"),
+  get ALERT_SENSITIVITY(): number {
+    return parseFloat(getEnvVar("ALERT_SENSITIVITY", false) || "0.3");
+  },
 
   /** Node environment */
-  NODE_ENV: getNodeEnv(),
+  get NODE_ENV(): string {
+    return getNodeEnv();
+  },
 
   /** Is production environment */
-  isProduction: getNodeEnv() === "production",
+  get isProduction(): boolean {
+    return getNodeEnv() === "production";
+  },
 };
