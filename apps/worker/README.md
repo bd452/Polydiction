@@ -7,6 +7,7 @@ WebSocket ingestion worker for live market data.
 ## Purpose
 
 This service will run outside Vercel (long-lived process) to:
+
 - Maintain WebSocket connections to Polymarket
 - Parse and normalize live events
 - Push events to the database via queue/API bridge

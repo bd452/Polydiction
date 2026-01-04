@@ -21,12 +21,8 @@ export const markets = pgTable("markets", {
   endDate: timestamp("end_date", { withTimezone: true }),
   active: boolean("active").notNull().default(true),
   raw: jsonb("raw").notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
 /**
@@ -40,9 +36,7 @@ export const tokens = pgTable("tokens", {
   outcome: text("outcome").notNull(),
   price: decimal("price", { precision: 18, scale: 8 }).notNull(),
   raw: jsonb("raw").notNull(),
-  updatedAt: timestamp("updated_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
 /**
@@ -63,9 +57,7 @@ export const trades = pgTable("trades", {
   price: decimal("price", { precision: 18, scale: 8 }).notNull(),
   timestamp: timestamp("timestamp", { withTimezone: true }).notNull(),
   raw: jsonb("raw").notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
 /**
@@ -121,9 +113,7 @@ export const alerts = pgTable("alerts", {
   reasons: jsonb("reasons").notNull(),
   features: jsonb("features").notNull(),
   marketState: jsonb("market_state").notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
 // Type exports for use in application code
