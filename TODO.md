@@ -29,11 +29,11 @@
 - [x] Configure environment variable handling
   - [x] Add `.env.example` { .env.example }
   - [x] Define API base URLs and keys (Polymarket, DB) { apps/web/src/env.ts }
-- [ ] Configure GitHub CI/CD { .github/workflows/ }
+- [x] Configure GitHub CI/CD { .github/workflows/ }
   - [x] Create main CI workflow for builds, tests, and lints { .github/workflows/ci.yml }
   - [x] Configure pnpm caching for faster builds
   - [x] Add Turbo remote caching (optional)
-  - [ ] Set up status checks and branch protection rules
+  - [x] Set up status checks and branch protection rules { docs/ops/branch-protection.md }
 
 ### Data Model & Storage
 
