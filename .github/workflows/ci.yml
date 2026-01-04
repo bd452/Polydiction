@@ -16,6 +16,16 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
+    # Turbo Remote Caching (optional)
+    # To enable, add TURBO_TOKEN and TURBO_TEAM secrets to GitHub repository settings:
+    # 1. Go to https://vercel.com/account/tokens and create a new token
+    # 2. Set TURBO_TOKEN in GitHub repo Settings > Secrets > Actions
+    # 3. Set TURBO_TEAM to your Vercel team slug (or username for personal accounts)
+    # If not set, Turbo will use local caching only
+    env:
+      TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+      TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
