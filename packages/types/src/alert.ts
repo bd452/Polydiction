@@ -1,11 +1,4 @@
-import type {
-  DecimalString,
-  MarketId,
-  Timestamp,
-  TradeId,
-  UUID,
-  WalletAddress,
-} from "./common";
+import type { DecimalString, MarketId, Timestamp, TradeId, UUID, WalletAddress } from "./common";
 
 /**
  * Individual feature scores that contributed to an alert

@@ -7,6 +7,7 @@ Automated trade execution service.
 ## Purpose
 
 This isolated service handles:
+
 - Risk framework and position limits
 - Order construction and execution
 - API key management and signing
@@ -15,6 +16,7 @@ This isolated service handles:
 ## Why Isolated?
 
 Trade execution requires:
+
 - Secure handling of API keys and signing credentials
 - Strict risk controls and kill switches
 - Audit logging for all trading activity

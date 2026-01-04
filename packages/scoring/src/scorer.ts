@@ -43,7 +43,7 @@ function extractFeatures(input: ScoringInput): Record<keyof typeof FEATURE_WEIGH
     } else {
       // Somewhere in spread
       const distanceFromMid = Math.abs(trade.price - midPrice);
-      aggressiveness = distanceFromMid / (spread / 2) * 0.5;
+      aggressiveness = (distanceFromMid / (spread / 2)) * 0.5;
     }
   }
 
@@ -52,13 +52,12 @@ function extractFeatures(input: ScoringInput): Record<keyof typeof FEATURE_WEIGH
 
   // Position concentration
   const positionConcentration =
-    context.totalLiquidity > 0
-      ? Math.min(context.walletPosition / context.totalLiquidity, 1)
-      : 0;
+    context.totalLiquidity > 0 ? Math.min(context.walletPosition / context.totalLiquidity, 1) : 0;
 
   // Ramp speed (position change in last hour)
   const positionDelta = Math.abs(context.walletPosition - context.walletPositionHourAgo);
-  const rampSpeed = context.medianTradeSize > 0 ? normalize(positionDelta, context.medianTradeSize * 5) : 0;
+  const rampSpeed =
+    context.medianTradeSize > 0 ? normalize(positionDelta, context.medianTradeSize * 5) : 0;
 
   // Wallet freshness (new wallets are more suspicious)
   let walletFreshness = 0;
@@ -92,9 +91,7 @@ function extractFeatures(input: ScoringInput): Record<keyof typeof FEATURE_WEIGH
 /**
  * Check must-flag conditions that bypass scoring
  */
-function checkMustFlag(
-  input: ScoringInput
-): { mustFlag: boolean; condition?: string } {
+function checkMustFlag(input: ScoringInput): { mustFlag: boolean; condition?: string } {
   const { context } = input;
 
   // Single trade > $25k
@@ -104,7 +101,8 @@ function checkMustFlag(
   }
 
   // Hourly accumulation > $50k
-  const hourlyDelta = Math.abs(context.walletPosition - context.walletPositionHourAgo) * input.trade.price;
+  const hourlyDelta =
+    Math.abs(context.walletPosition - context.walletPositionHourAgo) * input.trade.price;
   if (hourlyDelta > MUST_FLAG_THRESHOLDS.hourlyAccumulationUsd) {
     const threshold = MUST_FLAG_THRESHOLDS.hourlyAccumulationUsd.toLocaleString();
     return { mustFlag: true, condition: `Accumulated > $${threshold} in 1 hour` };
@@ -188,9 +186,10 @@ function generateReasons(
   };
 
   return {
-    primary: mustFlagResult.mustFlag && mustFlagResult.condition
-      ? mustFlagResult.condition
-      : primaryReasonMap[primaryKey] ?? "Anomalous trading pattern",
+    primary:
+      mustFlagResult.mustFlag && mustFlagResult.condition
+        ? mustFlagResult.condition
+        : (primaryReasonMap[primaryKey] ?? "Anomalous trading pattern"),
     factors,
     mustFlag: mustFlagResult.mustFlag,
     mustFlagCondition: mustFlagResult.condition,

@@ -1,10 +1,4 @@
-import type {
-  DecimalString,
-  MarketId,
-  RawPayload,
-  Timestamp,
-  TokenId,
-} from "./common";
+import type { DecimalString, MarketId, RawPayload, Timestamp, TokenId } from "./common";
 
 /**
  * Market category for classification
