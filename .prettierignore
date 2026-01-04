@@ -1,3 +1,6 @@
 .next/
 node_modules/
 pnpm-lock.yaml
+
+# Documentation - contains ASCII diagrams and formatted tables
+*.md
