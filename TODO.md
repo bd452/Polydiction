@@ -138,8 +138,8 @@ Migrate from PostgreSQL/Drizzle to Firebase/Firestore for data storage.
 
 - [x] Remove PostgreSQL-related CI setup { .github/workflows/ci.yml }
 - [x] Add Firebase credentials as GitHub secrets
-- [ ] Add Firebase emulator configuration (optional)
-- [ ] Validate Firestore security rules (if applicable)
+- [x] Add Firebase emulator configuration (optional) { firebase.json, firestore.rules, packages/db/src/client.ts }
+- [x] Validate Firestore security rules (if applicable) { firestore.rules }
 
 ### Market Universe Ingestion
 

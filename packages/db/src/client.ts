@@ -11,16 +11,33 @@ interface FirebaseConfig {
 }
 
 /**
- * Get Firebase configuration from environment variables
+ * Check if running against Firebase Emulator
+ * The FIRESTORE_EMULATOR_HOST env var is the standard way to connect to the emulator.
+ * When set, Firebase Admin SDK automatically routes requests to the emulator.
  */
-function getFirebaseConfig(): FirebaseConfig {
+function isEmulatorMode(): boolean {
+  return !!process.env["FIRESTORE_EMULATOR_HOST"];
+}
+
+/**
+ * Get Firebase configuration from environment variables
+ * In emulator mode, only projectId is required (credentials are bypassed)
+ */
+function getFirebaseConfig(): FirebaseConfig | { projectId: string } {
   const projectId = process.env["FIREBASE_PROJECT_ID"];
-  const clientEmail = process.env["FIREBASE_CLIENT_EMAIL"];
-  const privateKey = process.env["FIREBASE_PRIVATE_KEY"];
 
   if (!projectId) {
     throw new Error("Missing required environment variable: FIREBASE_PROJECT_ID");
   }
+
+  // In emulator mode, credentials are not required
+  if (isEmulatorMode()) {
+    return { projectId };
+  }
+
+  const clientEmail = process.env["FIREBASE_CLIENT_EMAIL"];
+  const privateKey = process.env["FIREBASE_PRIVATE_KEY"];
+
   if (!clientEmail) {
     throw new Error("Missing required environment variable: FIREBASE_CLIENT_EMAIL");
   }
@@ -41,6 +58,13 @@ function getFirebaseConfig(): FirebaseConfig {
 /**
  * Initialize Firebase Admin SDK
  * Returns existing app if already initialized (singleton pattern)
+ *
+ * In emulator mode (FIRESTORE_EMULATOR_HOST is set):
+ * - Credentials are not required
+ * - Requests are automatically routed to the local emulator
+ *
+ * In production mode:
+ * - Requires FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY
  */
 function initializeFirebaseApp(): App {
   const existingApps = getApps();
@@ -50,15 +74,24 @@ function initializeFirebaseApp(): App {
 
   const config = getFirebaseConfig();
 
+  // In emulator mode, initialize without credentials
+  if (isEmulatorMode()) {
+    return initializeApp({
+      projectId: config.projectId,
+    });
+  }
+
+  // Production mode: use service account credentials
+  const fullConfig = config as FirebaseConfig;
   const serviceAccount: ServiceAccount = {
-    projectId: config.projectId,
-    clientEmail: config.clientEmail,
-    privateKey: config.privateKey,
+    projectId: fullConfig.projectId,
+    clientEmail: fullConfig.clientEmail,
+    privateKey: fullConfig.privateKey,
   };
 
   return initializeApp({
     credential: cert(serviceAccount),
-    projectId: config.projectId,
+    projectId: fullConfig.projectId,
   });
 }
 
